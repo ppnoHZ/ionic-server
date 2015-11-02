@@ -32,6 +32,10 @@ app.post('/upload/:upload_name/:token',function(req,res)
                 {
                     //console.log(files['file']);
                     var file = files['file'];
+                    if(!file){
+                        res.send({status:'file not found'});
+                        return;
+                    }
                     var extension = file.name.split('.').pop();
                     var valid = false;
                     for(var index in config.file_format)
