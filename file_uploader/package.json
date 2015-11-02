@@ -1,0 +1,21 @@
+{
+  "name": "file_uploader",
+  "version": "1.0.0",
+  "description": "file uploader for meteor client in RSC",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "file",
+    "uploader"
+  ],
+  "author": "ZHR",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "formidable": "^1.0.17",
+    "jsonwebtoken": "^5.4.1"
+  }
+}
