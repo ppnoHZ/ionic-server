@@ -7,11 +7,19 @@ var body_parser =require('body-parser');
 var formidable = require('formidable');
 var jwt = require('jsonwebtoken');
 var config = require('./config');
+var morgan = require('morgan');
 var app = express();
 
 app.use(body_parser.urlencoded({extended:true}));
 app.use(body_parser.json());
-app.use(express.static(__dirname+'/temp'));
+app.use(morgan('dev'));
+
+app.all("*", function(req, res, next){
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Content-Length, Accept");
+    res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+    next();
+});
 
 app.post('/upload/:upload_name/:token',function(req,res)
 {
@@ -30,7 +38,7 @@ app.post('/upload/:upload_name/:token',function(req,res)
                 form.uploadDir = config.temp_path;
                 form.parse(req,function(err,fields,files)
                 {
-                    //console.log(files['file']);
+                    console.log(files['file']);
                     var file = files['file'];
                     if(!file){
                         res.send({status:'file not found'});
@@ -140,12 +148,17 @@ app.get('/verify_token/:token',function(req,res)
 
 app.get('/',function(req,res)
 {
-    res.send({status:'success',msg:'Hello, this is the file uploader for RSC.'});
+    res.status(200).send({status:'success',msg:'Hello, this is the file uploader for RSC.'});
 });
+
+//app.options('*',function(req,res)
+//{
+//    res.status(200).send({status:'hello'});
+//});
 
 app.use('*',function(req,res)
 {
-    res.status(404).send({status:'not_found'});
+    res.send({status:'not_found'});
 });
 
 app.listen(config.port,function(err)
