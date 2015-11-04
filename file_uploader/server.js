@@ -39,6 +39,11 @@ app.post('/upload/:upload_name/:token',function(req,res)
                 form.parse(req,function(err,fields,files)
                 {
                     console.log(files['file']);
+                    if(files['file'] === undefined)
+                    {
+                        res.send({status:'no_file_attached',msg:'No file attached or wrong form format.'});
+                        return;
+                    }
                     var file = files['file'];
                     if(!file){
                         res.send({status:'file not found'});
