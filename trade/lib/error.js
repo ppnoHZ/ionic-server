@@ -16,6 +16,9 @@ errorCode = {
     wordIsNull: '文字不存在',
     wordForm: '文字格式不对',
     supplyOrderOfferListCount: '报价组数量错误',
+    supplyOrderNotFound: '现货单不存在',
+    supplyOrderInvalid: '现货单失效',
+    supplyOrderTimeOut: '现货单超时',
     purchaseOrderNotFound: '采购单不存在',
     purchaseOrderInvalid: '采购单失效',
     purchaseOrderTimeOut: '采购单超时'

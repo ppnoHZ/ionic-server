@@ -19,7 +19,7 @@ function SupplyOrder(){
     this.attAccount = '';   //产品结算细则
     this.offerList = [];   //报价组[offerListData]
     this.attLiability = '';   //违约责任
-    this.status = config.purchaseOrderStatus.NORMAL;   //状态
+    this.status = config.publishOrderStatus.NORMAL;   //状态
 }
 
 function OfferListData(){
@@ -34,6 +34,34 @@ function ArrListData(){
     this.routeEnd = '';   //终点
     this.price = 0;   //价格每吨
 }
+
+supplyOrder.edit = function(id, obj, doc){
+    var data = {};
+    if(obj.category){
+        data['category'] = obj.category;
+        data.categoryChn = config.categoryName[obj.category]; //货物类型中文
+    }
+    if(obj.offerList){
+        data.offerAmount = obj.offerList.length;    //报价组数量
+        data.offerList = supplyOrder.createOfferList(obj.offerList);
+    }
+    var res = token.decode(obj.token, Meteor.settings.secretKeys.trade);
+    res.editID = res.userID;
+    res.timeEdit = new Date();
+    if(obj.desc){
+        data.desc = doc.desc;
+        categoryParam.edit(doc.category, data.desc, obj.desc);
+    }
+    obj.locationArrival ? data.locationArrival = obj.locationArrival : 0;  //提货地点
+    obj.stylePayment ? data.stylePayment = parseInt(obj.stylePayment)/100 : 0;  //付款方式
+    obj.originCheck ? data.originCheck = obj.originCheck : 0;  //质检结果
+    obj.attAccount ? data.attAccount = '' : 0;   //产品结算细则
+    obj.attLiability ? data.attLiability = '' : 0;   //违约责任
+    if (!Object.keys(data).length) {
+        return;
+    }
+    supplyOrder.update({_id: id}, {$set: data});
+};
 
 supplyOrder.create = function(obj){
     var data = new SupplyOrder();
@@ -105,6 +133,9 @@ supplyOrder.offerListCheck = function(data){
 //地点起始价格
 supplyOrder.arrListCheck = function(data){
     check(data, [Object]);
+    if(data.length > config.supplyOrderArrListCount){
+        return errorCode.supplyOrderArrListCount;
+    }
     for(var i = 0; i < data.length; i++){
         var offerData = data[i];
         var err;
@@ -121,6 +152,53 @@ supplyOrder.arrListCheck = function(data){
             return err;
         }
     }
+};
+
+supplyOrder.editCheck = function(obj){
+    if(obj.category){
+        var err = common.categoryCheck(obj.category);
+        if(err){
+            return err;
+        }
+    }
+
+    if(obj.token){
+        err = purchaseOrder.tokenCheck(obj.token);
+        if(err){
+            return err;
+        }
+    }
+
+    obj.desc ? check(obj.desc, Object) : 0;
+
+    if(obj.locationArrival){
+        err = common.addressCheck(obj.locationArrival);
+        if(err){
+            return err;
+        }
+    }
+
+    if(obj.stylePayment){
+        err = common.stylePaymentCheck(obj.stylePayment);
+        if(err){
+            return err;
+        }
+    }
+
+    if(obj.originCheck){
+        err = common.originCheck(obj.originCheck);
+        if(err){
+            return err;
+        }
+    }
+
+    if(obj.offerList){
+        err = supplyOrder.offerListCheck(obj.offerList);
+        if(err){
+            return err;
+        }
+    }
+
 };
 
 supplyOrder.createCheck = function(obj){

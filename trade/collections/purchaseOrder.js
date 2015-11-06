@@ -24,7 +24,7 @@ function PurchaseOrder(){
     this.attAccount = '';   //产品结算细则
     this.attTraffice = '';   //物流细则
     this.attLiability = '';   //违约责任
-    this.status = config.purchaseOrderStatus.NORMAL;   //状态
+    this.status = config.publishOrderStatus.NORMAL;   //状态
 }
 
 purchaseOrder.create = function(obj){

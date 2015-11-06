@@ -24,14 +24,14 @@ Meteor.methods({
         if(res.companyID != data.companyID){
             throw new Meteor.Error(errorCode.companyNotOne);
         }
-        if(data.status == config.purchaseOrderStatus.CANCELLED){
+        if(data.status == config.publishOrderStatus.CANCELLED){
             throw new Meteor.Error(errorCode.purchaseOrderInvalid);
         }
         if(data.timeValidity.getTime() <= Date.now()){
             throw new Meteor.Error(errorCode.purchaseOrderTimeOut);
         }
         purchaseOrder.update({_id:id},{$set:{
-            status: config.purchaseOrderStatus.CANCELLED,
+            status: config.publishOrderStatus.CANCELLED,
             editID: res.userID,
             timeEdit : new Date()
         }});
@@ -58,7 +58,7 @@ Meteor.methods({
         if(res.companyID != data.companyID){
             throw new Meteor.Error(errorCode.companyNotOne);
         }
-        if(data.status == config.purchaseOrderStatus.CANCELLED){
+        if(data.status == config.publishOrderStatus.CANCELLED){
             throw new Meteor.Error(errorCode.purchaseOrderInvalid);
         }
         if(data.timeValidity.getTime() <= Date.now()){

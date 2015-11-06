@@ -4,6 +4,7 @@
 
 config = {
     supplyOrderOfferListCount: 3,
+    supplyOrderArrListCount: 10,
     purchaseTimeOut: 60000,
     category: {
         COAL_SULFUR_HIGH: 'COAL_SULFUR_HIGH',
@@ -22,7 +23,7 @@ config = {
         SELL: 'SELL',
         OTHER: 'OTHER'
     },
-    purchaseOrderStatus: {
+    publishOrderStatus: {
         NORMAL:'NORMAL',
         CANCELLED:'CANCELLED'
     }
