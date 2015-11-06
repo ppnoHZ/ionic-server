@@ -3,6 +3,7 @@
  */
 
 config = {
+    supplyOrderOfferListCount: 3,
     purchaseTimeOut: 60000,
     category: {
         COAL_SULFUR_HIGH: 'COAL_SULFUR_HIGH',

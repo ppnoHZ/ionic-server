@@ -13,6 +13,9 @@ errorCode = {
     stylePayment: '付款方式错误',
     originCheck: '无效质检方',
     companyNotOne: '不是同一个公司',
+    wordIsNull: '文字不存在',
+    wordForm: '文字格式不对',
+    supplyOrderOfferListCount: '报价组数量错误',
     purchaseOrderNotFound: '采购单不存在',
     purchaseOrderInvalid: '采购单失效',
     purchaseOrderTimeOut: '采购单超时'

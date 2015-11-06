@@ -44,3 +44,14 @@ common.originCheck = function(data){
         return errorCode.originCheck;
     }
 };
+//文字检查
+common.wordCheck = function(data){
+    check(data, String);
+    if (!data || data.length === 0) {
+        return errorCode.wordIsNull;
+    }
+    var reg = /^[\u4E00-\u9FA5]{2,10}$/;
+    if(!reg.test(data)){
+        return errorCode.wordForm;
+    }
+};

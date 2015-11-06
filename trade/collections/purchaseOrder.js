@@ -35,12 +35,7 @@ purchaseOrder.create = function(obj){
     var res = token.decode(obj.token, Meteor.settings.secretKeys.trade);
     data.companyID = res.companyID;    //公司id
     data.userID = res.userID;    //用户id
-    data.desc = _.clone(categoryParam[obj.category]); //货物参数描述
-    for(var key in categoryParam[obj.category]){
-        if(obj.desc[key]){
-            data.desc[key] = obj.desc[key];
-        }
-    }
+    data.desc = categoryParam.create(obj.category, obj.desc);//货物参数描述
     data.timeArrival = new Date(obj.timeArrival);  //提货时间
     data.locationArrival = obj.locationArrival;  //提货地点
     data.stylePayment = parseInt(obj.stylePayment)/100;  //付款方式
@@ -66,11 +61,7 @@ purchaseOrder.edit = function(id, obj, doc){
     res.timeEdit = new Date();
     if(obj.desc){
         data.desc = doc.desc;
-        for(var key in data.desc){
-            if(obj.desc[key]){
-                data.desc[key] = obj.desc[key];
-            }
-        }
+        categoryParam.edit(doc.category, data.desc, obj.desc);
     }
     obj.timeArrival ? data.timeArrival = new Date(obj.timeArrival) : 0;  //提货时间
     obj.locationArrival ? data.locationArrival = obj.locationArrival : 0;  //提货地点
@@ -90,7 +81,7 @@ purchaseOrder.edit = function(id, obj, doc){
 
 purchaseOrder.tokenCheck = function(data){
     var res = token.decode(data, Meteor.settings.secretKeys.trade);
-    if(!res){
+    if(!res || !res.time || !res.companyID || !res.userID){
         return errorCode.token;
     }
     if(Date.now() - res.time > config.purchaseTimeOut){

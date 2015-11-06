@@ -36,3 +36,22 @@ categoryParam = {
         v6 : 3
     }
 };
+
+categoryParam.create = function(type, obj){
+    var data = _.clone(categoryParam[type]); //货物参数描述
+    for(var key in data){
+        if(obj[key]){
+            data[key] = obj[key];
+        }
+    }
+    return data;
+};
+
+categoryParam.edit = function(type, oldData, newData){
+    for(var key in categoryParam[type]){
+        if(newData[key]){
+            oldData[key] = newData[key];
+        }
+    }
+    return oldData;
+};
