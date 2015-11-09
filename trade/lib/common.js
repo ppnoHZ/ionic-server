@@ -16,6 +16,13 @@ common.amountCheck = function(data){
         return errorCode.amount;
     }
 };
+//月份检查
+common.monthCheck = function(data){
+    check(data, String);
+    if(parseInt(data) < 1 || parseInt(data) > 12){
+        return errorCode.month;
+    }
+};
 //时间检查(毫秒值)
 common.timeCheck = function(data){
     check(data, Number);

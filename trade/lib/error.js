@@ -5,6 +5,7 @@
 errorCode = {
     categoryNotFound: '货物类型不存在',
     amount: '数量错误',
+    month: '月份错误',
     token: '错误秘钥',
     tokenTimeOut: '秘钥超时',
     time: '时间错误',

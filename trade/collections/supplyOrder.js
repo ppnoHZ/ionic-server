@@ -23,6 +23,7 @@ function SupplyOrder(){
 }
 
 function OfferListData(){
+    this.month = '';     //月份1-12
     this.amount = 0;    //供货量
     this.priceDep = 0;   //出厂价
     this.arrAmount = 0;   //到岸价数组个数
@@ -85,6 +86,7 @@ supplyOrder.createOfferList = function(arr){
     var array = [];
     for(var i = 0; i < arr.length; i++){
         var data = new OfferListData();
+        data.month = arr[i].month;    //月份
         data.amount = arr[i].amount;    //供货量
         data.priceDep = arr[i].priceDep;   //出厂价
         data.arrAmount = arr[i].arrList.length;   //到岸价数组个数
@@ -116,6 +118,10 @@ supplyOrder.offerListCheck = function(data){
     for(var i = 0; i < data.length; i++){
         var offerData = data[i];
         var err;
+        err = common.monthCheck(offerData.month);
+        if(err){
+            return err;
+        }
         err = common.amountCheck(offerData.amount);
         if(err){
             return err;
