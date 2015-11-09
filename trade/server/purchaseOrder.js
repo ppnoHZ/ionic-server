@@ -3,7 +3,7 @@
  */
 
 Meteor.methods({
-    getCategory: function (type) {
+    getCategoryParam: function (type) {
         check(type, String);
         if(!config.category[type]){
             throw new Meteor.Error(errorCode.categoryNotFound);

@@ -4,10 +4,15 @@
 
 Meteor.publish('purchaseOrder', function(n){
     check(n, Number);
-    return purchaseOrder.find({}, {limit:n});
+    return purchaseOrder.find({
+        status: config.publishOrderStatus.NORMAL,
+        timeValidity: {$gt:new Date()}
+    }, {limit:n});
 });
 
 Meteor.publish('supplyOrder', function(n){
     check(n, Number);
-    return supplyOrder.find({}, {limit:n});
+    return supplyOrder.find({
+        status: config.publishOrderStatus.NORMAL
+    }, {limit:n});
 });
