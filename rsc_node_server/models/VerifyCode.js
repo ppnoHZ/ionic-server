@@ -3,12 +3,9 @@
  */
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var VerifyCodeSchema = new Schema(
-    {
-        code:String,
-        verified:{type:Boolean, default:false},
-        time:{type:Date, default:Date.now()}
-    }
-);
-
-module.exports = mongoose.model('VerifyCode',VerifyCodeSchema);
+var VerifyCodeSchema = new Schema({
+        code: {type:String},
+        phone: {type:String},
+        time: {type:Date, default: new Date()}
+    });
+module.exports = mongoose.model('VerifyCode', VerifyCodeSchema);
