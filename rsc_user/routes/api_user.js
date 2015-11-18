@@ -22,33 +22,8 @@ function createTokenUser(user) {
         });
 }
 
-function createTokenInvite(companyId, companyName, role, inviteId) {
-    return jwt.sign({
-            name: companyName,
-            companyId :companyId,
-            inviteId: inviteId,
-            role:role
-        },
-        config_common.secret_keys.invite,
-        {
-            expiresIn: config_common.token_invite_timeout
-        });
-}
-
 module.exports = function() {
     var api = express.Router();
-
-    api.get('/exist/:phone',function(req, res, next) {
-        if(!config_common.checkPhone(req.params.phone)) {
-            return next('invalid_format');
-        }
-        User.count({phone: req.params.phone},function(err, count) {
-           if(err) {
-               return next(err);
-           }
-           config_common.sendData(req, {conut: count}, next);
-        });
-    });
 
     api.post('/signup', function(req, res, next) {
         if(!config_common.checkCommonString(req.body.full_name) ||
@@ -189,38 +164,68 @@ module.exports = function() {
         });
     });
 
-    api.get('/get_verify_code/:phone',function(req, res, next) {
-        if(!config_common.checkPhone(req.params.phone)) {
+    api.use(require('../middlewares/mid_verify_user')());
+
+    api.get('/me', function(req, res, next) {
+        User.findById(req.decoded.id,function(err, user) {
+            if(err) {
+                return next(err);
+            }
+            config_common.sendData(req, {user:user}, next);
+        });
+    });
+
+    api.post('/modify_self', function(req, res, next) {
+        if(!req.body.phone &&
+            !req.body.real_name &&
+            !req.body.gender &&
+            !req.body.photo_url){
             return next('invalid_format');
         }
+        if((req.body.phone && !config_common.checkPhone(req.body.phone)) ||
+            (req.body.real_name && !config_common.checkRealName(req.body.real_name)) ||
+            (req.body.gender && !config_common.checkGender(req.body.gender))) {
+            return next('invalid_format');
+        }
+        var edit = false;
         async.waterfall([
             function(cb){
-                User.count({phone: req.params.phone}, function(err, count) {
-                    if(err) {
-                        return cb(err);
-                    }
-                    if(count > 0){
-                        return cb('phone_is_used');
-                    }
-                    cb();
-                });
+                User.findById(req.decoded.id, cb);
             },
-            function(cb){
-                VerifyCode.findOne({phone: req.params.phone}, cb);
-            },
-            function(codeData, cb){
-                if(!codeData){
-                    var verify_code = new VerifyCode({code:config_common.getVerifyCode(), phone:req.params.phone});
-                    verify_code.save(cb);
+            function(user, cb){
+                if(req.body.phone && req.body.phone != user.phone){
+                    User.count({phone:req.body.phone}, function(err, count){
+                        if(err){
+                            return cb(err);
+                        }
+                        if(count > 0){
+                            return cb('phone_is_used');
+                        }
+                        user.phone = req.body.phone;
+                        edit = true;
+                        cb(null, user);
+                    });
                 }else{
-                    if(Date.now() - codeData.time.getTime() < config_common.verify_codes_resend) {
-                        cb('too_frequent');
-                    } else {
-                        codeData.code = config_common.getVerifyCode();
-                        codeData.time = new Date();
-                        codeData.markModified('time');
-                        codeData.save(cb);
-                    }
+                    cb(null, user);
+                }
+            },
+            function(user, cb){
+                if(req.body.real_name && req.body.real_name != user.real_name){
+                    user.real_name = req.body.real_name;
+                    edit = true;
+                }
+                if(req.body.gender && req.body.gender != user.gender) {
+                    user.gender = req.body.gender;
+                    edit = true;
+                }
+                if(req.body.photo_url && req.body.photo_url != user.photo_url) {
+                    user.photo_url = req.body.photo_url;
+                    edit = true;
+                }
+                if(edit){
+                    user.save(cb);
+                }else{
+                    cb(null, user);
                 }
             }
         ],function(err, result){
@@ -231,124 +236,7 @@ module.exports = function() {
         });
     });
 
-    api.use(function(req, res, next) {
-        var token = req.body.token || req.params.token || req.headers['x-access-token'];
-        if(token) {
-            jwt.verify(token, config_common.secret_keys.user, function(err, decoded) {
-                if(err) {
-                    return next('auth_failed');
-                }
-                req.decoded = decoded;
-                next();
-            });
-        } else {
-            next('no_token');
-        }
-    });
-
-    api.get('/invite/:role',function(req, res, next) {
-        if(!config_common.checkRoleType(req.params.role) ||
-            !config_common.checkAdmin(req.decoded.role)) {
-            return next('invalid_role');
-        }
-        Company.findById(req.decoded.company_id)
-            .select('full_name type')
-            .exec(function(err, company) {
-            if(err) {
-                return next(err);
-            }
-            if(company) {
-                if(req.params.role.indexOf(company.type) == -1){
-                    return next('invalid_role_type');
-                }
-                var invitation = new Invitation({
-                        company_name:company.full_name,
-                        company_id:company._id,
-                        role:req.params.role
-                    });
-                invitation.save(function(err, result) {
-                    if(err) {
-                        return next(err);
-                    }
-                    config_common.sendData(req, createTokenInvite(company._id, company.full_name, req.params.role, result._id), next);
-                });
-            } else {
-                next('not_found');
-            }
-        });
-    });
-
-    api.route('/me')
-        .get(function(req, res, next) {
-            User.findById(req.decoded.id,function(err, user) {
-                if(err) {
-                    return next(err);
-                }
-                config_common.sendData(req, {user:user}, next);
-            });
-        })
-        .post(function(req, res, next) {
-            if(!req.body.phone &&
-                !req.body.real_name &&
-                !req.body.gender &&
-                !req.body.photo_url){
-                return next('invalid_format');
-            }
-            if((req.body.phone && !config_common.checkPhone(req.body.phone)) ||
-                (req.body.real_name && !config_common.checkRealName(req.body.real_name)) ||
-                (req.body.gender && !config_common.checkGender(req.body.gender))) {
-                return next('invalid_format');
-            }
-            var edit = false;
-            async.waterfall([
-                function(cb){
-                    User.findById(req.decoded.id, cb);
-                },
-                function(user, cb){
-                    if(req.body.phone && req.body.phone != user.phone){
-                        User.count({phone:req.body.phone}, function(err, count){
-                            if(err){
-                                return cb(err);
-                            }
-                            if(count > 0){
-                                return cb('phone_is_used');
-                            }
-                            user.phone = req.body.phone;
-                            edit = true;
-                            cb(null, user);
-                        });
-                    }else{
-                        cb(null, user);
-                    }
-                },
-                function(user, cb){
-                    if(req.body.real_name && req.body.real_name != user.real_name){
-                        user.real_name = req.body.real_name;
-                        edit = true;
-                    }
-                    if(req.body.gender && req.body.gender != user.gender) {
-                        user.gender = req.body.gender;
-                        edit = true;
-                    }
-                    if(req.body.photo_url && req.body.photo_url != user.photo_url) {
-                        user.photo_url = req.body.photo_url;
-                        edit = true;
-                    }
-                    if(edit){
-                        user.save(cb);
-                    }else{
-                        cb(null, user);
-                    }
-                }
-            ],function(err, result){
-                if(err){
-                    return next(err);
-                }
-                config_common.sendData(req, result, next);
-            });
-        });
-
-    api.post('/modify',function(req, res, next) {
+    api.post('/modify_other',function(req, res, next) {
         if (!req.body.id) {
             return next('invalid_id');
         }

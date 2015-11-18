@@ -6,6 +6,6 @@ var Schema = mongoose.Schema;
 var VerifyCodeSchema = new Schema({
         code: {type:String},
         phone: {type:String},
-        time: {type:Date, default: new Date()}
+        time: {type:Date}
     });
 module.exports = mongoose.model('VerifyCode', VerifyCodeSchema);

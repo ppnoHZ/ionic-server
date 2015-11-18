@@ -11,7 +11,6 @@ mongoose.connect(config_server.mongodb);
 
 mongoose.connection.on('connected',function() {
     var date_string = new Date().toString();
-    console.log('===================mongodb=======================');
     console.log('mongodb connection established: ' + date_string);
 });
 
@@ -32,22 +31,35 @@ mongoose.connection.on('close',function() {
 });
 
 var app = express();
+
+app.all("*", function(req, res, next){
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Content-Length, Accept");
+    res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+    next();
+});
+
 app.use(express.static(__dirname + '/views'));
 app.use(body_parser.urlencoded({extended:true}));
 app.use(body_parser.json());
 app.use(morgan('tiny'));
-app.use(require('./middleware/mid_receive')());
+app.use(require('./middlewares/mid_receive')());
+
 app.use('/api/user', require('./routes/api_user')());
-app.use(require('./middleware/mid_send')());
+app.use('/api/phone', require('./routes/api_phone')());
+app.use('/api/company', require('./routes/api_company')());
+app.use('/api/invitation', require('./routes/api_invitation')());
+
+app.use(require('./middlewares/mid_send')());
 app.use('*',function(req, res) {
     res.send({status:'not_found'});
 });
 
 app.listen(config_server.port,function(err) {
+    console.log('=================================================');
     if(err) {
         console.log('Error Occurred When Starting Server, ' + new Date().toString());
     } else {
-        console.log('=================================================');
         console.log('Server Started. ' + new Date().toString());
         console.log('===================config========================');
         console.log(config_server);
