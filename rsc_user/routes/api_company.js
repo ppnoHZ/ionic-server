@@ -11,7 +11,6 @@ module.exports = function() {
     api.use(require('../middlewares/mid_verify_user')());
 
     api.post('/authentication',function(req, res, next) {
-        console.log(req.decoded)
         if(!req.body.currency ||
             !req.body.nickName ||
             !req.body.licenseURL ||
