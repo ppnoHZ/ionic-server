@@ -12,7 +12,6 @@ var UserSchema = new Schema({
     role: {type:String, default:''},
     gender: {type:String, default:'MALE'},
     company_id: {type:Array},
-    trucks: {type:Array},
     photo_url: {type:String, default:''}
 });
 

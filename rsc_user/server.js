@@ -48,10 +48,11 @@ app.use(require('./middlewares/mid_receive')());
 app.use('/api/phone', require('./routes/api_phone')());
 app.use('/api/user_trade', require('./routes/api_user_trade')());
 app.use('/api/user_traffic', require('./routes/api_user_traffic')());
-app.use('/api/line', require('./routes/api_company_traffic_line')());
-app.use('/api/line_price', require('./routes/api_company_traffic_line_price')());
+app.use('/api/user_traffic_truck', require('./routes/api_user_traffic_truck')());
 app.use('/api/company_trade', require('./routes/api_company_trade')());
 app.use('/api/company_traffic', require('./routes/api_company_traffic')());
+app.use('/api/company_traffic_line', require('./routes/api_company_traffic_line')());
+app.use('/api/company_traffic_line_price', require('./routes/api_company_traffic_line_price')());
 app.use('/api/invitation_trade', require('./routes/api_invitation_trade')());
 app.use('/api/invitation_traffic', require('./routes/api_invitation_traffic')());
 

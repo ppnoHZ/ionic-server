@@ -10,7 +10,7 @@ var TruckSchema = new Schema({
     volume: {type:String, required:true},//体积
     long: {type:String, required:true},//车长
     weight: {type:String, required:true},//载重
-    status: {type:String},  //本地车，回程车，不限
+    //status: {type:String},  //本地车，回程车，不限
     user_id: {type:Array}   //所属用户
 });
 

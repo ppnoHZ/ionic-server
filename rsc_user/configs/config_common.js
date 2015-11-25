@@ -28,7 +28,7 @@ module.exports = {
         'TRAFFIC_DRIVER':'TRAFFIC_DRIVER'
     },
 
-    trunk_types : {
+    truck_types : {
         'HUO':'HUO',
         'ZI_XIE':'ZI_XIE',
         'LENG_CANG':'LENG_CANG',
@@ -38,6 +38,43 @@ module.exports = {
         'ZHONG_XING_GUAN':'ZHONG_XING_GUAN',
         'TIE_LONG':'TIE_LONG',
         'BU_XIU_GANG_DA_CAO_GUAN':'BU_XIU_GANG_DA_CAO_GUAN'
+    },
+
+    truck_volumes : {
+        'GAO_LAN':'GAO_LAN',
+        'QIAN_SI_HOU_BA':'QIAN_SI_HOU_BA',
+        'BAN_GUA':'BAN_GUA',
+        'XIANG_SHI':'XIANG_SHI',
+        'DAN_QIAO':'DAN_QIAO',
+        'SI_QIAO':'SI_QIAO',
+        'DI_LAN':'DI_LAN',
+        'SAN_QIAO':'SAN_QIAO',
+        'HOU_BA_LUN':'HOU_BA_LUN',
+        'CHANG_PENG':'CHANG_PENG',
+        'QUAN_GUA':'QUAN_GUA',
+        'ZHONG_LAN':'ZHONG_LAN',
+        'JIA_CHANG_GUA':'JIA_CHANG_GUA'
+    },
+
+    truck_longs : {
+        '2_5':'2_5',
+        '6_8':'6_8',
+        '9_10':'9_10',
+        '11_12':'11_12',
+        '13_15':'13_15',
+        '16_17.5':'16_17',
+        '17.5_':'17.5_'
+    },
+
+    truck_weights : {
+        '2_5':'2_5',
+        '6_10':'6_10',
+        '11_15':'11_15',
+        '16_20':'16_20',
+        '21_25':'21_25',
+        '26_30':'26_30',
+        '31_35':'31_35',
+        '36_40':'36_40'
     },
 
     company_category: {
@@ -84,6 +121,10 @@ module.exports = {
         return role.indexOf('ADMIN') >= 0;
     },
 
+    checkDriver:function(role) {
+        return role.indexOf('DRIVER') >= 0;
+    },
+
     checkTrafficCompanyByRole:function(role) {
         return role.indexOf(this.company_category.TRAFFIC) >= 0;
     },
@@ -93,7 +134,19 @@ module.exports = {
     },
 
     checkTruckType:function(type) {
-        return !!(this.trunk_types[type]);
+        return !!(this.truck_types[type]);
+    },
+
+    checkTruckVolume:function(type) {
+        return !!(this.truck_volumes[type]);
+    },
+
+    checkTruckLong:function(type) {
+        return !!(this.truck_longs[type]);
+    },
+
+    checkTruckWeight:function(type) {
+        return !!(this.truck_weights[type]);
     },
 
     checkProvince:function(data) {

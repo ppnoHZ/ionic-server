@@ -6,14 +6,14 @@ var bcrypt = require('bcrypt-nodejs');
 var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
-        phone:      {type:String, required:true, unique:{index:true}},
-        password:   {type:String ,required:true, select:false},
-        real_name: {type:String, default:''},
-        role:       {type:String, default:''},
-        gender:     {type:String, default:'MALE'},
-        company_id: {type:String, default:''},
-        photo_url:  {type:String, default:''}
-    });
+    phone:      {type:String, required:true, unique:{index:true}},
+    password:   {type:String ,required:true, select:false},
+    real_name: {type:String, default:''},
+    role:       {type:String, default:''},
+    gender:     {type:String, default:'MALE'},
+    company_id: {type:String, default:''},
+    photo_url:  {type:String, default:''}
+});
 
 UserSchema.pre('save',function(next) {
     var user = this;
