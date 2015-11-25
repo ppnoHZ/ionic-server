@@ -4,9 +4,10 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var InvitationSchema = new Schema({
-        company_name:String,
-        company_id:String,
-        role:String,
+        company_name: String,
+        company_id: String,
+        role: String,
+        type: String,
         time_create:{type:Date}
     });
 

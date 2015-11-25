@@ -3,7 +3,6 @@
  */
 var async = require('async');
 var express = require('express');
-var User = require('../models/User');
 var VerifyCode = require('../models/VerifyCode');
 var config_common = require('../configs/config_common');
 
@@ -14,11 +13,18 @@ module.exports = function() {
         if(!config_common.checkPhone(req.params.phone)) {
             return next('invalid_format');
         }
-        User.count({phone: req.params.phone},function(err, count) {
+        VerifyCode.findOne({phone: req.params.phone},function(err, result) {
             if(err) {
                 return next(err);
             }
-            config_common.sendData(req, {conut: count}, next);
+            if(!result) {
+                return next('not_found');
+            }
+            if(result.companyType){
+                config_common.sendData(req, {use: true}, next);
+            }else{
+                config_common.sendData(req, {use: false}, next);
+            }
         });
     });
 
@@ -28,22 +34,22 @@ module.exports = function() {
         }
         async.waterfall([
             function(cb){
-                User.count({phone: req.params.phone}, function(err, count) {
+                VerifyCode.findOne({phone: req.params.phone}, function(err, result) {
                     if(err) {
                         return cb(err);
                     }
-                    if(count > 0){
+                    if(result && result.companyType){
                         return cb('phone_is_used');
                     }
-                    cb();
+                    cb(null, result);
                 });
-            },
-            function(cb){
-                VerifyCode.findOne({phone: req.params.phone}, cb);
             },
             function(codeData, cb){
                 if(!codeData){
-                    var verify_code = new VerifyCode({code:config_common.getVerifyCode(), phone:req.params.phone, time:new Date()});
+                    var verify_code = new VerifyCode({
+                        code:config_common.getVerifyCode(),
+                        phone:req.params.phone,
+                        time:new Date()});
                     verify_code.save(cb);
                 }else{
                     if(Date.now() - codeData.time.getTime() < config_common.verify_codes_resend) {
@@ -60,6 +66,7 @@ module.exports = function() {
             if(err){
                 return next(err);
             }
+            //TODO
             config_common.sendData(req, result, next);
         });
     });

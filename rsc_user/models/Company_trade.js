@@ -14,4 +14,4 @@ var CompanySchema = new Schema({
         url_yingyezhizhao:{type:String}
     });
 
-module.exports = mongoose.model('Company',CompanySchema);
+module.exports = mongoose.model('company_trade',CompanySchema);

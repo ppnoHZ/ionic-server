@@ -1,11 +1,12 @@
 /**
- * Created by Administrator on 2015/11/6 0006.
+ * Created by Administrator on 2015/11/23.
  */
+
 var async = require('async');
 var express = require('express');
 var jwt = require('jsonwebtoken');
-var User = require('../models/User');
-var Company = require('../models/Company');
+var User = require('../models/User_traffic');
+var Company = require('../models/Company_traffic');
 var Invitation = require('../models/Invitation');
 var VerifyCode = require('../models/VerifyCode');
 var config_common = require('../configs/config_common');
@@ -30,7 +31,7 @@ module.exports = function() {
             !config_common.checkPassword(req.body.password) ||
             !config_common.checkPhone(req.body.phone) ||
             !config_common.checkRealName(req.body.real_name) ||
-            !config_common.checkCompanyType(req.body.type)) {
+            req.body.type != config_common.company_category.TRAFFIC) {
             return next('invalid_format');
         }
         async.waterfall([
@@ -45,24 +46,17 @@ module.exports = function() {
                     if(v_code.code != req.body.verify_code){
                         return cb('invalid_verify_code');
                     }
+                    if(v_code.companyType){
+                        return cb('phone_is_used');
+                    }
                     if(Date.now() - v_code.time.getTime() >= config_common.verify_codes_timeout){
                         return cb('verify_code_timeout');
                     }
-                    v_code.remove(cb);
+                    v_code.companyType = req.body.type;
+                    v_code.save(cb);
                 });
             },
-            function(result, cb){
-                User.count({phone: req.body.phone}, function(err, count) {
-                    if(err) {
-                        return cb(err);
-                    }
-                    if(count > 0){
-                        return cb('phone_is_used');
-                    }
-                    cb();
-                });
-            },
-            function(cb){
+            function(v_code, count, cb){
                 var company = new Company({
                     full_name:req.body.full_name,
                     type:req.body.type
@@ -96,74 +90,6 @@ module.exports = function() {
         });
     });
 
-    api.post('/signup_by_invitation',function(req, res, next) {
-        if( !config_common.checkPassword(req.body.password) ||
-            !config_common.checkPhone(req.body.phone) ||
-            !config_common.checkRealName(req.body.real_name)) {
-            return next('invalid_format');
-        }
-        Invitation.findById(req.body.id, function(err, invitation) {
-            if(err) {
-                return next(err);
-            }
-            if(invitation) {
-                VerifyCode.findOne({phone: req.body.phone},function(err, v_code) {
-                    if(err) {
-                        return next(err);
-                    }
-                    if(v_code) {
-                        if(v_code.code == req.body.verify_code) {
-                            var user = new User({
-                                    phone: req.body.phone,
-                                    password: req.body.password,
-                                    role: invitation.role,
-                                    real_name: req.body.real_name,
-                                    gender: req.body.gender,
-                                    company_id: invitation.company_id
-                                });
-                            user.save(function(err) {
-                                if(err) {
-                                    return next(err);
-                                }
-                                v_code.remove(function(){});
-                                invitation.remove(function(){});
-                                config_common.sendData(req, {user_id: user._id, company_id: user.company_id, token: createTokenUser(user)}, next);
-                            });
-                        } else {
-                            next('invalid_verify_code');
-                        }
-                    } else {
-                        next('verifyCode_not_found');
-                    }
-                });
-            } else {
-                next('invite_not_found');
-            }
-        });
-    });
-
-    api.post('/login',function(req, res, next) {
-        if(!config_common.checkPhone(req.body.phone) ||
-            !config_common.checkPassword(req.body.password)) {
-            return next('invalid_format');
-        }
-        User.findOne({phone:req.body.phone})
-            .select('password company_id role')
-            .exec(function(err, user) {
-            if(err) {
-                return next(err);
-            }
-            if(!user){
-                return next('user_not_found');
-            }
-            if(!user.comparePassword(req.body.password)){
-                return next('password_err');
-            }
-            var token = createTokenUser(user);
-            config_common.sendData(req, {token:token}, next);
-        });
-    });
-
     api.use(require('../middlewares/mid_verify_user')());
 
     api.get('/me', function(req, res, next) {
@@ -182,7 +108,7 @@ module.exports = function() {
             !req.body.photo_url){
             return next('invalid_format');
         }
-        if((req.body.phone && !config_common.checkPhone(req.body.phone)) ||
+        if((req.body.phone && !config_common.checkPhone(req.body.phone) && req.body.verify_code) ||
             (req.body.real_name && !config_common.checkRealName(req.body.real_name)) ||
             (req.body.gender && !config_common.checkGender(req.body.gender))) {
             return next('invalid_format');
@@ -193,17 +119,37 @@ module.exports = function() {
                 User.findById(req.decoded.id, cb);
             },
             function(user, cb){
+                if(!user){
+                    return cb('not_found');
+                }
                 if(req.body.phone && req.body.phone != user.phone){
-                    User.count({phone:req.body.phone}, function(err, count){
+                    VerifyCode.findOne({phone:req.body.phone}, function(err, result){
                         if(err){
                             return cb(err);
                         }
-                        if(count > 0){
+                        if(!result){
+                            return cb('not_found');
+                        }
+                        if(result.companyType){
                             return cb('phone_is_used');
                         }
-                        user.phone = req.body.phone;
-                        edit = true;
-                        cb(null, user);
+                        if(result.code != req.body.verify_code){
+                            return cb('invalid_verify_code');
+                        }
+                        result.companyType = config_common.getCompanyTypeByRole(req.decoded.role);
+                        result.save(function(err, saveRes){
+                            if(err){
+                                return cb(err);
+                            }
+                            VerifyCode.remove({phone: user.phone}, function(err, removeRes){
+                                if(err){
+                                    return cb(err);
+                                }
+                                user.phone = req.body.phone;
+                                edit = true;
+                                cb(null, user);
+                            });
+                        });
                     });
                 }else{
                     cb(null, user);
@@ -261,21 +207,41 @@ module.exports = function() {
                 User.findById(req.body.id, cb);
             },
             function (user, cb) {
+                if(!user){
+                    return cb('not_found');
+                }
                 if (config_common.checkAdmin(user.role) ||
                     user.company_id != req.decoded.company_id) {
-                    return next('not_authorized');
+                    return cb('not_authorized');
                 }
                 if (req.body.phone && req.body.phone != user.phone) {
-                    User.count({phone: req.body.phone}, function (err, count) {
-                        if (err) {
+                    VerifyCode.findOne({phone:req.body.phone}, function(err, result){
+                        if(err){
                             return cb(err);
                         }
-                        if (count > 0) {
+                        if(!result){
+                            return cb('not_found');
+                        }
+                        if(result.companyType){
                             return cb('phone_is_used');
                         }
-                        user.phone = req.body.phone;
-                        edit = true;
-                        cb(null, user);
+                        if(result.code != req.body.verify_code){
+                            return cb('invalid_verify_code');
+                        }
+                        result.companyType = config_common.getCompanyTypeByRole(req.decoded.role);
+                        result.save(function(err, saveRes){
+                            if(err){
+                                return cb(err);
+                            }
+                            VerifyCode.remove({phone: user.phone}, function(err, removeRes){
+                                if(err){
+                                    return cb(err);
+                                }
+                                user.phone = req.body.phone;
+                                edit = true;
+                                cb(null, user);
+                            });
+                        });
                     });
                 } else {
                     cb(null, user);

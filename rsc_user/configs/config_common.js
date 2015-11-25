@@ -1,8 +1,12 @@
 /**
  * Created by Administrator on 2015/11/6 0006.
  */
-module.exports =
-{
+var _ = require('underscore');
+var configCity = require('./config_city');
+var configProvince = require('./config_province');
+var configDistrict = require('./config_district');
+
+module.exports = {
     verify_codes_timeout: 10*60*1000,   //验证码超时时间
     verify_codes_resend: 3*60*1000,     //验证码重发时间
     token_user_timeout: 60*60*24*7,     //用户秘钥超时时间
@@ -22,6 +26,18 @@ module.exports =
         'TRADE_FINANCE':'TRADE_FINANCE',
         'TRAFFIC_ADMIN':'TRAFFIC_ADMIN',
         'TRAFFIC_DRIVER':'TRAFFIC_DRIVER'
+    },
+
+    trunk_types : {
+        'HUO':'HUO',
+        'ZI_XIE':'ZI_XIE',
+        'LENG_CANG':'LENG_CANG',
+        'YOU_GUAN':'YOU_GUAN',
+        'BAO_WEN':'BAO_WEN',
+        'QI_ZHONG':'QI_ZHONG',
+        'ZHONG_XING_GUAN':'ZHONG_XING_GUAN',
+        'TIE_LONG':'TIE_LONG',
+        'BU_XIU_GANG_DA_CAO_GUAN':'BU_XIU_GANG_DA_CAO_GUAN'
     },
 
     company_category: {
@@ -68,8 +84,36 @@ module.exports =
         return role.indexOf('ADMIN') >= 0;
     },
 
+    checkTrafficCompanyByRole:function(role) {
+        return role.indexOf(this.company_category.TRAFFIC) >= 0;
+    },
+
     checkRoleType:function(type) {
         return !!(this.user_roles[type]);
+    },
+
+    checkTruckType:function(type) {
+        return !!(this.trunk_types[type]);
+    },
+
+    checkProvince:function(data) {
+        return !!(configProvince[data]);
+    },
+
+    checkCity:function(pro, city) {
+        return !!(configCity[pro][city]);
+    },
+
+    checkDistrict:function(city, dis) {
+        if(dis){
+            return !!(configDistrict[city][dis]);
+        }else{
+            return true;
+        }
+    },
+
+    checkNumberBiggerZero:function(num) {
+        return !(!num || !_.isNumber(num) || num <= 0);
     },
 
     sendData:function(req, data, next) {
@@ -84,5 +128,9 @@ module.exports =
             s_code += this.verify_codes[index];
         }
         return s_code;
+    },
+
+    getCompanyTypeByRole:function(role){
+        return role.split('_')[0];
     }
 };

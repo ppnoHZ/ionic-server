@@ -45,10 +45,15 @@ app.use(body_parser.json());
 app.use(morgan('tiny'));
 app.use(require('./middlewares/mid_receive')());
 
-app.use('/api/user', require('./routes/api_user')());
 app.use('/api/phone', require('./routes/api_phone')());
-app.use('/api/company', require('./routes/api_company')());
-app.use('/api/invitation', require('./routes/api_invitation')());
+app.use('/api/user_trade', require('./routes/api_user_trade')());
+app.use('/api/user_traffic', require('./routes/api_user_traffic')());
+app.use('/api/line', require('./routes/api_company_traffic_line')());
+app.use('/api/line_price', require('./routes/api_company_traffic_line_price')());
+app.use('/api/company_trade', require('./routes/api_company_trade')());
+app.use('/api/company_traffic', require('./routes/api_company_traffic')());
+app.use('/api/invitation_trade', require('./routes/api_invitation_trade')());
+app.use('/api/invitation_traffic', require('./routes/api_invitation_traffic')());
 
 app.use(require('./middlewares/mid_send')());
 app.use('*',function(req, res) {

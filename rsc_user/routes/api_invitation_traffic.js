@@ -1,8 +1,10 @@
 /**
- * Created by Administrator on 2015/11/18.
+ * Created by Administrator on 2015/11/23.
  */
 var express = require('express');
-var Company = require('../models/Company');
+var jwt = require('jsonwebtoken');
+var Company = require('../models/Company_traffic');
+var Invitation = require('../models/Invitation');
 var config_common = require('../configs/config_common');
 
 function createTokenInvite(companyId, companyName, role, inviteId) {
@@ -42,6 +44,7 @@ module.exports = function() {
                         company_name:company.full_name,
                         company_id:company._id,
                         role:req.params.role,
+                        type: config_common.company_category.TRAFFIC,
                         time_create:new Date()
                     });
                     invitation.save(function(err, result) {
