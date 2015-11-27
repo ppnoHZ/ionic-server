@@ -269,7 +269,7 @@ module.exports = function(app,express)
     });
 
     // 获得某采购挂单的抢单数据，以价格升序排序
-    api.get('/demand_offer_list/:id/:page',function(req,res)
+    api.get('/offer_list/:id/:page',function(req,res)
     {
         // 权限检查
         if(req.decoded.role == config_common.user_roles.TRADE_FINANCE || req.decoded.role == config_common.user_roles.TRADE_MANUFACTURE ||
@@ -298,7 +298,7 @@ module.exports = function(app,express)
     });
 
     // 查看采购抢单详细内容
-    api.get('/demand_offer_detail/:id',function(req,res)
+    api.get('/offer_detail/:id',function(req,res)
     {
         DemandOffer.findById(req.params.id,function(err,entry)
         {
@@ -335,7 +335,7 @@ module.exports = function(app,express)
     });
 
     // 查看自己或本公司发过的所有抢单内容
-    api.get('/demand_offer_self/:entity/:target/:page',function(req,res)
+    api.get('/offer_self/:entity/:target/:page',function(req,res)
     {
         var page_num = parseInt(req.params.page);
         if(isNaN(page_num) || page_num <= 0)
@@ -375,7 +375,7 @@ module.exports = function(app,express)
     });
 
     // 修改抢单数据
-    api.post('/demand_offer_edit/:id',function(req,res)
+    api.post('/offer_edit/:id',function(req,res)
     {
         if(req.decoded.role == config_common.user_roles.TRADE_ADMIN || req.decoded.role == config_common.user_roles.TRADE_PURCHASE)
         {
@@ -450,7 +450,7 @@ module.exports = function(app,express)
     });
 
     // 针对某个采购单发起抢单
-    api.post('/demand_offer_new/:target',function(req,res)
+    api.post('/offer_new/:target',function(req,res)
     {
         if(req.decoded.role == config_common.user_roles.TRADE_ADMIN || req.decoded.role == config_common.user_roles.TRADE_PURCHASE)
         {
@@ -519,6 +519,195 @@ module.exports = function(app,express)
         {
             mw.sendData(res,'not_allow',null);
         }
+    });
+
+    // 生成采购订单
+    api.get('/order_new/:source/:target',function(req,res)
+    {
+        Demand.findById(req.params.source,function(err,entry_demand)
+        {
+            if(err)
+            {
+                return mw.sendData(res,'err',{err:err});
+            }
+            if(entry_demand)
+            {
+                if(req.decoded.id != entry_demand.user_id)
+                {
+                    return mw.sendData(res,'not_allow',null);
+                }
+                DemandOffer.findById(req.params.target,function(err,entry_offer)
+                {
+                    if(err)
+                    {
+                        return mw.sendData(res,'err',{err:err});
+                    }
+                    if(entry_offer)
+                    {
+                        if(entry_offer.demand_id != entry_demand._id)
+                        {
+                            return mw.sendData(res,'not_allow',null);
+                        }
+                        DemandOrder.count({demand_id:entry_demand._id, offer_id:entry_offer._id},function(err,count)
+                        {
+                            if(err)
+                            {
+                                return mw.sendData(res,'err',{err:err});
+                            }
+                            if(count>0)
+                            {
+                                mw.sendData(res,'already_exist',null)
+                            }
+                            else
+                            {
+                                var entry_order = new DemandOrder(
+                                    {
+                                        company_demand_id:entry_demand.company_id,
+                                        company_demand_name:entry_demand.company_name,
+                                        company_supply_id:entry_offer.company_id,
+                                        company_supply_name:entry_offer.company_name,
+                                        user_demand_id:entry_demand.user_id,
+                                        user_supply_id:entry_offer.user_id,
+                                        demand_id:entry_demand._id,
+                                        offer_id:entry_offer._id,
+                                        category:entry_demand.category,
+                                        category_chn:entry_demand.category_chn,
+                                        amount:entry_offer.amount,
+                                        price_unit:entry_offer.price,
+                                        desc:entry_demand.desc,
+                                        time_traffic:entry_demand.time_traffic,
+                                        location_depart:entry_offer.location_storage,
+                                        location_arrival:entry_demand.location_storage,
+                                        payment_advance:entry_offer.payment_advance,
+                                        payment_style: entry_demand.payment_style,
+                                        check_product:[],
+                                        att_product: entry_demand.att_product,
+                                        att_traffic:entry_demand.att_traffic,
+                                        att_liability:entry_demand.att_liability,
+                                        traffic_orders:[],
+                                        time_creation:Date.now(),
+                                        status:config_common.order_status.ineffective.eng,
+                                        step:1,
+                                        time_current_step:Date.now(),
+                                        url_advanced_payment:'',
+                                        url_final_payment:'',
+                                        style_advanced_payment:'',
+                                        style_final_payment:''
+                                    });
+                                entry_order.save(function(err)
+                                {
+                                    if(err)
+                                    {
+                                        return mw.sendData(res,'err',{err:err});
+                                    }
+                                    mw.sendData(res,'success',{id:entry_order._id});
+                                });
+                            }
+                        });
+                    }
+                    else
+                    {
+                        mw.sendData(res,'not_found',null)
+                    }
+                });
+            }
+            else
+            {
+                mw.sendData(res,'not_found',null)
+            }
+        });
+    });
+
+    // 查看采购订单列表 -- 只能查自己的或者本公司的
+    api.get('/order_list/:side/:category/:entity/:page',function(req,res)
+    {
+        var page_num = parseInt(req.params.page);
+        if(isNaN(page_num) || page_num <= 0)
+        {
+            return mw.sendData(res,'invalid_format',null);
+        }
+        var query = {};
+        if(req.params.category !== 'all')
+        {
+            query.category = req.params.category;
+        }
+        if(req.params.side == 'demand')
+        {
+            if(req.params.entity == 'self')
+            {
+                query.user_demand_id = req.decoded.id;
+            }
+            else
+            {
+                if(req.decoded.role !== config_common.user_roles.TRADE_ADMIN)
+                {
+                    return mw.sendData(res,'not_allow',null);
+                }
+                query.company_demand_id = req.decoded.company_id;
+            }
+        }
+        else
+        {
+            if(req.params.entity == 'self')
+            {
+                query.user_supply_id = req.decoded.id;
+            }
+            else
+            {
+                if(req.decoded.role !== config_common.user_roles.TRADE_ADMIN)
+                {
+                    return mw.sendData(res,'not_allow',null);
+                }
+                query.company_supply_id = req.decoded.company_id;
+            }
+        }
+
+        DemandOrder.find(query).sort({'time_creation':-1})
+            .skip((page_num - 1) * config_common.entry_per_page).limit(config_common.entry_per_page)
+            .exec(function(err,list)
+            {
+                if(err)
+                {
+                    return mw.sendData(res,'err',{err:err});
+                }
+                mw.sendData(res,'success',list);
+            });
+
+    });
+
+    // 查看采购订单细节
+    api.get('/order_detail/:id',function(req,res)
+    {
+        // 权限检查--弱
+        if(req.decoded.role !== config_common.user_roles.TRADE_ADMIN && req.decoded.role !== config_common.user_roles.TRADE_PURCHASE &&
+           req.decoded.role !== config_common.user_roles.TRADE_SALE)
+        {
+            return mw.sendData(res,'not_allow',null);
+        }
+        DemandOrder.findById(req.params.id,function(err,entry)
+        {
+            if(err)
+            {
+                return mw.sendData(res,'err',{err:err});
+            }
+            if(entry)
+            {
+                // 权限检查--强
+                if((req.decoded.id == entry.user_demand_id || req.decoded.id == entry.user_supply_id) ||
+                    (req.decoded.role === config_common.user_roles.TRADE_ADMIN && (req.decoded.company_id == entry.company_demand_id || req.decoded.company_id == entry.company_supply_id)))
+                {
+                    mw.sendData(res,'success',entry);
+                }
+                else
+                {
+                    mw.sendData(res,'not_allow',null);
+                }
+            }
+            else
+            {
+                mw.sendData(res,'not_found',null);
+            }
+        });
     });
 
 

@@ -7,18 +7,20 @@ var Schema = mongoose.Schema;
 var DemandOrderSchema = new Schema(
     {
         company_demand_id:{type:String,required:true},          // 需求方公司ID -- 来自采购单
+        company_demand_name:{type:String,required:true},        // 需求方公司名称 -- 来自采购单
         company_supply_id:{type:String,required:true},          // 供应方公司ID -- 来自抢单
+        company_supply_name:{type:String,required:true},        // 供应方公司名称 -- 来自抢 单
         user_demand_id:{type:String,required:true},             // 需求方订单发起人ID -- 来自采购单
         user_supply_id:{type:String,required:true},             // 供应方订单承接人ID -- 来自抢单
+        demand_id:{type:String, required:true},                 // 订单来自的挂单的ID -- 来自采购单
         offer_id:{type:String,required:true},                   // 订单来自的抢单的ID -- 来自抢单
         category:String,                                         // 商品类型 -- 来自采购单
         category_chn:String,                                     // 商品类型中文 -- 来自采购单
-        amount:Number,                                           // 采购数量 -- 来自采购单
+        amount:Number,                                           // 采购数量 -- 来自抢单
         price_unit:Number,                                       // 货物单价 -- 来自抢单
         //price_total:Number,                                    // 货物总价 -- 计算得出
         desc:[],                                                 // 货物描述字段，随着货物不同而不同 -- 来自采购单
-        time_depart:Date,                                        // 提货时间 -- 出厂价时有效
-        time_arrival:Date,                                       // 到货时间 -- 到岸价时有效
+        time_traffic:Date,                                       // 到/提货时间 -- 来自采购单
         location_depart:String,                                  // 提货地点 -- 来自抢单
         location_arrival:String,                                 // 到货地点 -- 来自采购单
         payment_advance:Number,                                  // 预付款 -- 百分比 -- 来自抢单
