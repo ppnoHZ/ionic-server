@@ -11,7 +11,9 @@ var TruckSchema = new Schema({
     long: {type:String, required:true},//车长
     weight: {type:String, required:true},//载重
     //status: {type:String},  //本地车，回程车，不限
-    user_id: {type:Array}   //所属用户
+    user_id: {type:Array},   //所属用户,
+    route_id: {type:String},    //线路id(运输中使用)
+    use: {type:Boolean, default: false}
 });
 
 module.exports = mongoose.model('truck', TruckSchema);

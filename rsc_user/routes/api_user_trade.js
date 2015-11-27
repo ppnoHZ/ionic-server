@@ -18,9 +18,7 @@ function createTokenUser(user) {
             role:user.role
         },
         config_common.secret_keys.user,
-        {
-            expiresIn: config_common.token_user_timeout
-        });
+        {expiresIn: config_common.token_user_timeout});
 }
 
 module.exports = function() {

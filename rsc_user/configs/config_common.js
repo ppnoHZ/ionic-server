@@ -15,7 +15,8 @@ module.exports = {
     verify_codes : ['0','1','2','3','4','5','6','7','8','9'],
     secret_keys: {
         user:'user',
-        invite:'invite'
+        invite:'invite',
+        server_traffic:'server_traffic'
     },
 
     user_roles : {
