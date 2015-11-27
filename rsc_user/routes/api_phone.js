@@ -18,7 +18,7 @@ module.exports = function() {
                 return next(err);
             }
             if(!result) {
-                return next('not_found');
+                config_common.sendData(req, {use: false}, next);
             }
             if(result.companyType){
                 config_common.sendData(req, {use: true}, next);
