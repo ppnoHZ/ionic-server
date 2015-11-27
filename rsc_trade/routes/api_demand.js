@@ -30,7 +30,7 @@ module.exports = function(app,express)
 {
     var api = express.Router();
 
-    // 获得token的测试路由，仅供测试使用
+    // 获得token的测试路由，仅供####测试####使用
     api.post('/token',function(req,res)
     {
         if(config_common.status !== 'dev')
@@ -56,7 +56,7 @@ module.exports = function(app,express)
         mw.sendData(res,'success',{token:token});
     });
 
-    // 测试日期
+    // ####测试####日期
     api.post('/test_date',function(req,res)
     {
         if(!config_common.checkDateString(req.body.s_time))
@@ -72,7 +72,7 @@ module.exports = function(app,express)
         mw.verifyUser(req,res,next);
     });
 
-    // 测试解析TOKEN后的数据
+    // ####测试#### 解析TOKEN后的数据
     api.get('/verify_token',function(req,res)
     {
         mw.sendData(res,'success',req.decoded)
@@ -298,41 +298,41 @@ module.exports = function(app,express)
     });
 
     // 查看采购抢单详细内容
-    //api.get('/demand_offer_detail/:id',function(req,res)
-    //{
-    //    DemandOffer.findById(req.params.id,function(err,entry)
-    //    {
-    //        if(err)
-    //        {
-    //            return mw.sendData(res,'err',{err:err});
-    //        }
-    //        if(entry)
-    //        {
-    //            var auth = false;
-    //            if(req.decoded.id == entry.user_id || req.decoded.id == entry.demand_user_id)
-    //            {
-    //                auth = true;
-    //            }
-    //            else if(req.decoded.role == config_common.user_roles.TRADE_ADMIN && (req.decoded.company_id == entry.company_id || req.decoded.company_id == entry.demand_company_id))
-    //            {
-    //                auth = true;
-    //            }
-    //
-    //            if(auth)
-    //            {
-    //                mw.sendData(res,'success',{entry:entry});
-    //            }
-    //            else
-    //            {
-    //                mw.sendData(res,'not_allow',null);
-    //            }
-    //        }
-    //        else
-    //        {
-    //            mw.send(res,'not_found',null);
-    //        }
-    //    });
-    //});
+    api.get('/demand_offer_detail/:id',function(req,res)
+    {
+        DemandOffer.findById(req.params.id,function(err,entry)
+        {
+            if(err)
+            {
+                return mw.sendData(res,'err',{err:err});
+            }
+            if(entry)
+            {
+                var auth = false;
+                if(req.decoded.id == entry.user_id || req.decoded.id == entry.demand_user_id)
+                {
+                    auth = true;
+                }
+                else if(req.decoded.role == config_common.user_roles.TRADE_ADMIN && (req.decoded.company_id == entry.company_id || req.decoded.company_id == entry.demand_company_id))
+                {
+                    auth = true;
+                }
+
+                if(auth)
+                {
+                    mw.sendData(res,'success',{entry:entry});
+                }
+                else
+                {
+                    mw.sendData(res,'not_allow',null);
+                }
+            }
+            else
+            {
+                mw.send(res,'not_found',null);
+            }
+        });
+    });
 
     // 查看自己或本公司发过的所有抢单内容
     api.get('/demand_offer_self/:entity/:target/:page',function(req,res)
@@ -374,6 +374,81 @@ module.exports = function(app,express)
             });
     });
 
+    // 修改抢单数据
+    api.post('/demand_offer_edit/:id',function(req,res)
+    {
+        if(req.decoded.role == config_common.user_roles.TRADE_ADMIN || req.decoded.role == config_common.user_roles.TRADE_PURCHASE)
+        {
+            DemandOffer.findById(req.params.id,function(err,entry)
+            {
+                if(err)
+                {
+                    return mw.sendData(res,'err',{err:err});
+                }
+                if(entry)
+                {
+                    // 确认修改权限，以及是否已经修改过3次。
+                    if((req.decoded.role == config_common.user_roles.TRADE_ADMIN && req.decoded.company_id != entry.company_id) ||
+                        (req.decoded.role == config_common.user_roles.TRADE_PURCHASE && req.decoded.id != entry.user_id) ||
+                        entry.change_remain <= 0)
+                    {
+                        return mw.sendData(res,'not_allow',null);
+                    }
+
+                    // 确认修改的项目并进行存储
+                    if(req.body.price)
+                    {
+                        var price = parseFloat(req.body.price);
+                        if(!isNaN(price))
+                        {
+                            entry.price = price;
+                        }
+                    }
+                    if(req.body.amount)
+                    {
+                        var amount = parseFloat(req.body.amount);
+                        if(!isNaN(amount))
+                        {
+                            entry.amount = amount;
+                        }
+                    }
+                    if(req.body.payment_advance)
+                    {
+                        var payment_advance = parseFloat(req.body.payment_advance);
+                        if(!isNaN(payment_advance) && payment_advance >=0 && payment_advance <= 100)
+                        {
+                            entry.payment_advance = payment_advance;
+                        }
+                    }
+                    if(req.body.time_transaction && config_common.checkDateString(req.body.time_transaction))
+                    {
+                        entry.time_transaction = new Date(req.body.time_transaction);
+                        entry.markModified('time_transaction');
+                    }
+
+                    entry.change_remain -= 1;
+
+                    entry.save(function(err)
+                    {
+                        if(err)
+                        {
+                            return mw.sendData(res,'err',{err:err});
+                        }
+                        mw.sendData(res,'success', {offer_id:entry._id,demand_id:entry.demand_id});
+                    });
+                }
+                else
+                {
+                    return mw.sendData(res,'not_found',null);
+                }
+            });
+        }
+        else
+        {
+            mw.sendData(res,'not_allow',null);
+        }
+    });
+
     // 针对某个采购单发起抢单
     api.post('/demand_offer_new/:target',function(req,res)
     {
@@ -387,7 +462,52 @@ module.exports = function(app,express)
                 }
                 if(entry)
                 {
-                    // TODO: 等待加入新建抢单功能
+                    // 检验抢单发起方的公司ID与采购单的公司ID是否相同
+                    // 相同的话不能发起采购单
+                    if(req.decoded.company_id == entry.company_id)
+                    {
+                        return mw.sendData(res,'not_allow',null);
+                    }
+
+                    // 各项信息VALIDATY检查
+                    var price = parseFloat(req.body.price);
+                    var amount = parseFloat(req.body.amount);
+                    var payment_advance = parseFloat(req.body.payment_advance);
+
+                    if(isNaN(price) || isNaN(amount) || (isNaN(payment_advance)&& payment_advance >=0 && payment_advance <= 100) ||
+                        !config_common.checkDateString(req.body.time_transaction) ||
+                        !config_common.checkCommonString(req.body.location_storage))
+                    {
+                        return mw.sendData(res,'invalid_format',null);
+                    }
+
+                    // 生成新的OFFER数据对象并存储
+                    var entry_offer = new DemandOffer(
+                        {
+                            user_id :req.decoded.id,
+                            company_id : req.decoded.company_id,
+                            company_name:req.decoded.company_name,
+                            demand_id:entry._id,
+                            demand_user_id:entry.user_id,
+                            demand_company_id:entry.company_id,
+                            demand_company_name:entry.company_name,
+                            price:price,
+                            payment_advance:payment_advance,
+                            time_transaction:new Date(req.body.time_transaction),
+                            location_storage:req.body.location_storage,
+                            amount:amount,
+                            change_remain:3,
+                            time_creation:Date.now()
+                        });
+
+                    entry_offer.save(function(err)
+                    {
+                        if(err)
+                        {
+                            return mw.sendData(res,'err',{err:err});
+                        }
+                        mw.sendData(res,'success', {offer_id:entry_offer._id,demand_id:entry._id});
+                    });
                 }
                 else
                 {

@@ -39,6 +39,7 @@ module.exports =
         {
             res_obj.data = result;
         }
+        res.setHeader('x-powered-by','Chris Brosnan');
         res.send(res_obj);
     }
 };
