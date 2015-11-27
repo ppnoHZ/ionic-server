@@ -20,7 +20,7 @@ function createToken(user)
         },
         config_common.secret_keys.user,
         {
-            expiresIn: 60 *60 * 24 *7
+            expiresIn: 60 *60 * 24 * 365
         }
     );
     return token;
@@ -469,44 +469,55 @@ module.exports = function(app,express)
                         return mw.sendData(res,'not_allow',null);
                     }
 
-                    // 各项信息VALIDATY检查
-                    var price = parseFloat(req.body.price);
-                    var amount = parseFloat(req.body.amount);
-                    var payment_advance = parseFloat(req.body.payment_advance);
-
-                    if(isNaN(price) || isNaN(amount) || (isNaN(payment_advance)&& payment_advance >=0 && payment_advance <= 100) ||
-                        !config_common.checkDateString(req.body.time_transaction) ||
-                        !config_common.checkCommonString(req.body.location_storage))
+                    // 该公司是否已经发起了对此采购单的抢单
+                    DemandOffer.count({demand_id:entry._id,company_id:req.decoded.company_id},function(err,count)
                     {
-                        return mw.sendData(res,'invalid_format',null);
-                    }
-
-                    // 生成新的OFFER数据对象并存储
-                    var entry_offer = new DemandOffer(
+                        if(count>0)
                         {
-                            user_id :req.decoded.id,
-                            company_id : req.decoded.company_id,
-                            company_name:req.decoded.company_name,
-                            demand_id:entry._id,
-                            demand_user_id:entry.user_id,
-                            demand_company_id:entry.company_id,
-                            demand_company_name:entry.company_name,
-                            price:price,
-                            payment_advance:payment_advance,
-                            time_transaction:new Date(req.body.time_transaction),
-                            location_storage:req.body.location_storage,
-                            amount:amount,
-                            change_remain:3,
-                            time_creation:Date.now()
-                        });
-
-                    entry_offer.save(function(err)
-                    {
-                        if(err)
-                        {
-                            return mw.sendData(res,'err',{err:err});
+                            mw.sendData(res,'already_exist',null)
                         }
-                        mw.sendData(res,'success', {offer_id:entry_offer._id,demand_id:entry._id});
+                        else
+                        {
+                            // 各项信息VALIDATY检查
+                            var price = parseFloat(req.body.price);
+                            var amount = parseFloat(req.body.amount);
+                            var payment_advance = parseFloat(req.body.payment_advance);
+
+                            if(isNaN(price) || isNaN(amount) || (isNaN(payment_advance)&& payment_advance >=0 && payment_advance <= 100) ||
+                                !config_common.checkDateString(req.body.time_transaction) ||
+                                !config_common.checkCommonString(req.body.location_storage))
+                            {
+                                return mw.sendData(res,'invalid_format',null);
+                            }
+
+                            // 生成新的OFFER数据对象并存储
+                            var entry_offer = new DemandOffer(
+                                {
+                                    user_id :req.decoded.id,
+                                    company_id : req.decoded.company_id,
+                                    company_name:req.decoded.company_name,
+                                    demand_id:entry._id,
+                                    demand_user_id:entry.user_id,
+                                    demand_company_id:entry.company_id,
+                                    demand_company_name:entry.company_name,
+                                    price:price,
+                                    payment_advance:payment_advance,
+                                    time_transaction:new Date(req.body.time_transaction),
+                                    location_storage:req.body.location_storage,
+                                    amount:amount,
+                                    change_remain:3,
+                                    time_creation:Date.now()
+                                });
+
+                            entry_offer.save(function(err)
+                            {
+                                if(err)
+                                {
+                                    return mw.sendData(res,'err',{err:err});
+                                }
+                                mw.sendData(res,'success', {offer_id:entry_offer._id,demand_id:entry._id});
+                            });
+                        }
                     });
                 }
                 else
