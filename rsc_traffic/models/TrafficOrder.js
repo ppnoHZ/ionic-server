@@ -20,7 +20,7 @@ var TrafficOrder = new Schema({
     location_depart:{type:String, required:true},          //交货地点
     payment_advance:{type:Number, required:true},           //预付款百分比
     att_traffic:{type:Array, required:true},               // 物流细则
-    att_liability:{type:String, required:true},             // 违约责任
+    att_liability:{type:String, required:true, select:false},             // 违约责任
     time_creation:{type:Date, required:true},               //创建时间
     status: {type:String, required:true},                    //订单状态
     step: {type:Number, required:true},                      //流程状态

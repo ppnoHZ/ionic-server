@@ -20,7 +20,7 @@ var TrafficDemand = new Schema({
         can_join : {type:Boolean, required:true},               //是否可拼单
         insurance : {type:Boolean, required:true},              //是否有货物保险
         att_traffic:{type:Array, required:true},               // 物流细则
-        att_liability:{type:String, required:true},            // 违约责任
+        att_liability:{type:String, required:true, select:false},            // 违约责任
         time_creation:{type:Date, required:true}               // 创建时间
 });
 
