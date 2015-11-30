@@ -13,6 +13,7 @@ var TrafficDemand = require('../models/TrafficDemand');
 var config_server = require('../configs/config_server');
 var config_common = require('../configs/config_common');
 
+//创建与user服务器通讯token防止其它请求
 function createTokenServer() {
     return jwt.sign({
             status:'success'
@@ -27,7 +28,7 @@ module.exports = function() {
     var api = express.Router();
 
     api.use(require('../middlewares/mid_verify_user')());
-
+    //增加抢单
     api.post('/add', function(req, res, next){
         if(req.decoded.role != config_common.user_roles.TRAFFIC_ADMIN){
             return next('not_allow');
@@ -43,6 +44,7 @@ module.exports = function() {
         }
         async.waterfall([
             function(cb){
+                //查找需求单
                 TrafficDemand.findById(req.body.demand_id, function(err, trafficDemand){
                     if(err){
                         return cb(err);
@@ -50,6 +52,7 @@ module.exports = function() {
                     if(!trafficDemand){
                         return cb('not_found');
                     }
+                    //检查该单可否拼单
                     if((!trafficDemand.can_join && req.body.amount < trafficDemand.amount) ||
                         (req.body.amount > trafficDemand.amount)){
                         return cb('invalid_amount');
@@ -61,6 +64,7 @@ module.exports = function() {
                 });
             },
             function(trafficDemand, cb){
+                //检查该公司是否已经存在该需求单的抢单
                 TrafficOffer.count({company_id:req.decoded.company_id, demand_id:trafficDemand._id}, function(err, countRes){
                     if(err){
                         return next(err);
@@ -73,7 +77,11 @@ module.exports = function() {
                 });
             },
             function(trafficDemand, cb){
-                var postData = querystring.stringify({v_info : req.body.v_info});
+                //向user服务器进行检查，查看车辆和人是否已经被使用
+                var postData = querystring.stringify({
+                    v_info : req.body.v_info,
+                    traffic_token: createTokenServer()
+                });
                 var options = {
                     hostname: config_server.user_server_ip,
                     port: config_server.user_server_port,
@@ -90,7 +98,7 @@ module.exports = function() {
                         if(JSON.parse(chunk).status == 'success'){
                             return cb(null, trafficDemand);
                         }else{
-                            return cb('v_info err');
+                            return cb(JSON.parse(chunk).msg);
                         }
                     });
                 });
@@ -121,7 +129,7 @@ module.exports = function() {
             config_common.sendData(req, result, next);
         });
     });
-
+    //按页数获取挂单
     api.get('/get/:demand_id/:page', function(req, res, next){
         req.params.page = parseInt(req.params.page);
         if(!config_common.checkNumberBiggerZero(req.params.page)){
@@ -140,7 +148,7 @@ module.exports = function() {
             config_common.sendData(req, result, next);
         }).skip((req.params.page-1)*config_common.entry_per_page).limit(config_common.entry_per_page);
     });
-
+    //修改挂单
     api.post('/edit', function(req, res, next){
         if(req.decoded.role != config_common.user_roles.TRAFFIC_ADMIN){
             return next('not_allow');
@@ -155,6 +163,7 @@ module.exports = function() {
         }
         async.waterfall([
             function(cb){
+                //检查挂单
                 TrafficOffer.findById(req.body.offer_id, function(err, trafficOffer){
                     if(err){
                         return cb(err);
@@ -162,7 +171,10 @@ module.exports = function() {
                     if(!trafficOffer){
                         return cb('not_found');
                     }
-                    if(trafficOffer.user_id != req.decoded.id){
+                    if((req.decoded.role != config_common.user_roles.TRADE_ADMIN &&
+                        req.decoded.id != trafficOffer.user_id) ||
+                        (req.decoded.role == config_common.user_roles.TRADE_ADMIN &&
+                        req.decoded.company_id != trafficOffer.company_id)){
                         return cb('not_allow');
                     }
                     if(trafficOffer.modify_count <= 0){
@@ -172,6 +184,7 @@ module.exports = function() {
                 });
             },
             function(trafficOffer, cb){
+                //检查需求单
                 TrafficDemand.findById(trafficOffer.demand_id, function(err, trafficDemand){
                     if(err){
                         return cb(err);
@@ -193,6 +206,7 @@ module.exports = function() {
             },
             function(trafficOffer, cb){
                 if(req.body.v_info){
+                    //检查卡车和司机信息
                     var postData = querystring.stringify({v_info : req.body.v_info});
                     var options = {
                         hostname: config_server.user_server_ip,
@@ -227,7 +241,7 @@ module.exports = function() {
                 req.body.price ? trafficOffer.price = req.body.price : 0;
                 req.body.style_payment ? trafficOffer.style_payment = req.body.style_payment : 0;
                 req.body.amount ? trafficOffer.amount = req.body.amount : 0;
-                req.body.v_info ? trafficOffer.v_info = req.body.v_info : 0;
+                req.body.v_info ? trafficOffer.v_info = JSON.parse(req.body.v_info) : 0;
                 trafficOffer.time_edit = new Date();
                 trafficOffer.modify_count--;
                 trafficOffer.save(cb);
@@ -239,7 +253,7 @@ module.exports = function() {
             config_common.sendData(req, result, next);
         });
     });
-
+    //选择抢单生成订单
     api.get('/select/:offer_id', function(req, res, next){
         if(req.decoded.role != config_common.user_roles.TRADE_ADMIN &&
             req.decoded.role != config_common.user_roles.TRADE_SALE &&
@@ -248,6 +262,7 @@ module.exports = function() {
         }
         async.waterfall([
             function(cb){
+                //检查是否已经有改抢单的订单（就是不能重复选择一个抢单）
                 TrafficOrder.count({offer_id: req.params.offer_id}, function(err, count){
                     if(err){
                         return cb(err);
@@ -259,23 +274,25 @@ module.exports = function() {
                 });
             },
             function(cb){
+                //检查抢单
                 TrafficOffer.findById(req.params.offer_id, function(err, trafficOffer){
                     if(err){
                         return cb(err);
                     }
                     if(!trafficOffer){
-                        return cb('not_found');
+                        return cb('offer_not_found');
                     }
                     cb(null, trafficOffer);
                 });
             },
             function(trafficOffer, cb){
+                //检查需求单
                 TrafficDemand.findById(trafficOffer.demand_id, function(err, trafficDemand){
                     if(err){
                         return cb(err);
                     }
                     if(!trafficDemand){
-                        return cb('not_found');
+                        return cb('demand_not_found');
                     }
                     if((req.decoded.role != config_common.user_roles.TRADE_ADMIN &&
                         req.decoded.id != trafficDemand.user_id) ||
@@ -283,45 +300,11 @@ module.exports = function() {
                         req.decoded.company_id != trafficDemand.company_id)){
                         return cb('not_allow');
                     }
-                    //只能创建采购的人确认订单
-                    //if(req.decoded.id != trafficDemand.user_id){
-                    //    return cb('not_allow');
-                    //}
                     cb(null, trafficDemand, trafficOffer);
                 });
             },
             function(trafficDemand, trafficOffer, cb){
-                var postData = querystring.stringify({
-                    v_info : JSON.stringify(trafficOffer.v_info),
-                    traffic_token: createTokenServer()
-                });
-                var options = {
-                    hostname: config_server.user_server_ip,
-                    port: config_server.user_server_port,
-                    path: config_server.user_server_use_v_info,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'x-access-token': req.headers['x-access-token']
-                    }
-                };
-                var request = http.request(options, function(result) {
-                    result.setEncoding('utf8');
-                    result.on('data', function (chunk) {
-                        if(JSON.parse(chunk).status == 'success'){
-                            return cb(null, trafficDemand, trafficOffer);
-                        }else{
-                            return cb('v_info err');
-                        }
-                    });
-                });
-                request.on('error', function(e) {
-                    return cb(e.message);
-                });
-                request.write(postData);
-                request.end();
-            },
-            function(trafficDemand, trafficOffer, cb){
+                //生成临时订单结构，之后把订单id及相应信息去user服务器进行检查
                 var order = new TrafficOrder({
                     user_demand_id: trafficDemand.user_id,
                     company_demand_id: trafficDemand.company_id,
@@ -340,30 +323,22 @@ module.exports = function() {
                     att_liability: trafficDemand.att_liability,
                     time_creation: new Date(),
                     status: config_common.order_status.ineffective.eng,
-                    step: config_common.order_step.step1,
+                    step: 1,
                     time_current_step: new Date(),
                     insurance: trafficDemand.insurance,
                     v_info: trafficOffer.v_info,
                     offer_id: trafficOffer._id,
                     demand_id: trafficDemand._id
                 });
-                order.save(function(err, trafficOrder){
-                    if(err){
-                        return cb(err);
-                    }
-                    cb(null, trafficOrder, trafficOffer);
-                });
-            },
-            function(trafficOrder, trafficOffer, cb){
                 var postData = querystring.stringify({
-                    v_info: JSON.stringify(trafficOffer.v_info),
-                    order_id: trafficOrder._id,
+                    v_info : JSON.stringify(trafficOffer.v_info),
+                    order_id: order._id+'',
                     traffic_token: createTokenServer()
                 });
                 var options = {
                     hostname: config_server.user_server_ip,
                     port: config_server.user_server_port,
-                    path: config_server.user_server_add_order_id,
+                    path: config_server.user_server_use_v_info,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -374,9 +349,9 @@ module.exports = function() {
                     result.setEncoding('utf8');
                     result.on('data', function (chunk) {
                         if(JSON.parse(chunk).status == 'success'){
-                            return cb(null, trafficOrder);
+                            return cb(null, order);
                         }else{
-                            return cb('v_info err');
+                            return cb(JSON.parse(chunk).msg);
                         }
                     });
                 });
@@ -385,6 +360,14 @@ module.exports = function() {
                 });
                 request.write(postData);
                 request.end();
+            },
+            function(order, cb){
+                order.save(function(err, trafficOrder){
+                    if(err){
+                        return cb(err);
+                    }
+                    cb(null, trafficOrder);
+                });
             }
         ],function(err, result){
             if(err){
@@ -392,7 +375,6 @@ module.exports = function() {
             }
             config_common.sendData(req, result, next);
         });
-
     });
 
     return api;

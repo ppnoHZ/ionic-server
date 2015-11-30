@@ -11,6 +11,7 @@ module.exports = function() {
 
     api.use(require('../middlewares/mid_verify_user')());
 
+    //增加物流需求单
     api.post('/add', function(req, res, next){
         if(req.decoded.role != config_common.user_roles.TRADE_ADMIN &&
             req.decoded.role != config_common.user_roles.TRADE_SALE &&
@@ -59,6 +60,7 @@ module.exports = function() {
         });
     });
 
+    //获取物流需求单
     api.get('/getList/:category/:order/:page', function(req, res, next){
         req.params.page = parseInt(req.params.page);
         if((req.params.category != 'ALL' && !config_common.checkGoods(req.params.category)) ||

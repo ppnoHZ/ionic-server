@@ -19,14 +19,6 @@ module.exports = {
         'cancelled':{eng:'cancelled',chn:'取消'}
     },
 
-    order_step :{
-        step1: 'step1',
-        step2: 'step2',
-        step3: 'step3',
-        step4: 'step4',
-        step5: 'step5'
-    },
-
     goods: {
         coal: {
             eng:'coal',chn:'煤炭',

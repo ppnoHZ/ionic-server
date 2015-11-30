@@ -22,7 +22,7 @@ var TrafficOrder = new Schema({
     att_liability:{type:String, required:true},             // 违约责任
     time_creation:{type:Date, required:true},               //创建时间
     status: {type:String, required:true},                    //订单状态
-    step: {type:String, required:true},                      //流程状态
+    step: {type:Number, required:true},                      //流程状态
     time_current_step: {type:Date, required:true},         //流程状态时间
     url_advanced_payment:String,                             // 预付款凭证的URL地址 -- 采购方上传
     url_final_payment:String,                                // 尾款付款凭证URL地址 -- 采购方上传
