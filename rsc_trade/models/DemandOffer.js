@@ -1,24 +1,24 @@
 /**
- * Created by Administrator on 2015/11/25 0025.
+ * Created by ZHR on 2015/11/25 0025.
  */
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var DemandOfferSchema = new Schema(
     {
-        user_id :{type:String, required:true},                          // ±íµ¥·¢ÆğÕßµÄÓÃ»§ID
-        company_id : {type:String, required:true},                      // ±íµ¥·¢ÆğÕßËùÊô¹«Ë¾µÄID
-        company_name:{type:String,required:true},                       // ±íµ¥·¢Æğ¹«Ë¾µÄÃû³Æ -- ÏÔÊ¾ÓÃ
-        demand_id:{type:String, required:true},                         // ¶ÔÓ¦µÄ²É¹ºµ¥µ¥ºÅID
-        demand_user_id:{type:String, required:true},                    // ¶ÔÓ¦²É¹ºµ¥´´½¨ÕßID
-        demand_company_id:{type:String,required:true},                  // ¶ÔÓ¦²É¹ºµ¥´´½¨¹«Ë¾ID
-        demand_company_name:{type:String,required:true},                // ¶ÔÓ¦²É¹ºµ¥´´½¨¹«Ë¾Ãû³Æ -- ÏÔÊ¾ÓÃ
-        price:Number,                                                   // ÇÀµ¥·½µÄ±¨¼Û
-        payment_advance:Number,                                         // ÇÀµ¥·½±¨³öµÄÔ¤¸¶¿î
-        time_transaction:Date,                                          // ½»»õÊ±¼ä
-        location_storage:String,                                        // ²Ö¿âµØµã
-        amount:Number,                                                  // ³ö»õÁ¿£¬»ò×îĞ¡´Õµ¥Á¿
-        change_remain:{type:Number,default:3},                         // Ê£ÓàµÄÄÜ¹»ĞŞ¸Ä´ÎÊı
+        user_id :{type:String, required:true},                          // è¡¨å•å‘èµ·è€…çš„ç”¨æˆ·ID
+        company_id : {type:String, required:true},                      // è¡¨å•å‘èµ·è€…æ‰€å±å…¬å¸çš„ID
+        company_name:{type:String,required:true},                       // è¡¨å•å‘èµ·å…¬å¸çš„åç§° -- æ˜¾ç¤ºç”¨
+        demand_id:{type:String, required:true},                         // å¯¹åº”çš„é‡‡è´­å•å•å·ID
+        demand_user_id:{type:String, required:true},                    // å¯¹åº”é‡‡è´­å•åˆ›å»ºè€…ID
+        demand_company_id:{type:String,required:true},                  // å¯¹åº”é‡‡è´­å•åˆ›å»ºå…¬å¸ID
+        demand_company_name:{type:String,required:true},                // å¯¹åº”é‡‡è´­å•åˆ›å»ºå…¬å¸åç§° -- æ˜¾ç¤ºç”¨
+        price:Number,                                                   // æŠ¢å•æ–¹çš„æŠ¥ä»·
+        payment_advance:Number,                                         // æŠ¢å•æ–¹æŠ¥å‡ºçš„é¢„ä»˜æ¬¾
+        time_transaction:Date,                                          // äº¤è´§æ—¶é—´
+        location_storage:String,                                        // ä»“åº“åœ°ç‚¹
+        amount:Number,                                                  // å‡ºè´§é‡ï¼Œæˆ–æœ€å°å‡‘å•é‡
+        change_remain:{type:Number,default:3},                         // å‰©ä½™çš„èƒ½å¤Ÿä¿®æ”¹æ¬¡æ•°
         time_creation:Date
     }
 );

@@ -1,34 +1,34 @@
 /**
- * Created by Administrator on 2015/11/16 0016.
- * ²É¹ºµ¥
+ * Created by ZHR on 2015/11/16 0016.
  */
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var DemandSchema = new Schema(
     {
-        user_id :{type:String, required:true},                  // ±íµ¥·¢ÆğÕßµÄÓÃ»§ID¡£
-        company_id : {type:String, required:true},              // ±íµ¥·¢ÆğÕßËùÊô¹«Ë¾µÄID¡£
-        company_name:{type:String,required:true},               // ·¢Æğ¹«Ë¾µÄÃû³Æ
-        category : {type:String, default:''},                   // »õÎïÖÖÀà£¬Ó¢ÎÄ±êÊ¶×Ö¶Î¡£
-        category_chn:{type:String ,default:''},                 // »õÎïÖÖÀà£¬ÖĞÎÄÏÔÊ¾×Ö¶Î¡£
-        amount:Number,                                           // ²É¹ºÊıÁ¿
-        desc:[],                                                 // »õÎïÃèÊö×Ö¶Î£¬¶şÎ¬Êı×é¡£
-        time_traffic:Date,                                       // Ìá»õµ½»õÊ±¼ä -- ¸ù¾İ±¨µÄÊÇ³ö³§¼Û»¹ÊÇµ½°¶¼Û×ö¾ßÌåÏÔÊ¾ÅĞ¶Ï
-        location_storage:String,                                 // µ½»õµØµã
-        payment_advance:Number,                                  // Ô¤¸¶¿î -- °Ù·Ö±È
-        payment_style: String,                                   // ±¨¼Û·½Ê½ -- ³ö³§¼Û»òµ½°¶¼Û
-        validity:{type:Boolean,default:true},                   // ÊÇ·ñÓĞĞ§£¬¼´ÊÇ·ñ¿ÉÇÀµ¥
-        time_validity: {type:Date,required:true},                // ÓĞĞ§ÆÚ
-        can_join : Boolean,                                      // ÊÇ·ñ¿É´Õµ¥
-        //origin_check: String,                                  // ÖÊ¼ì½á¹ûÀ´Ô´£ºÂò·½£¬Âô·½£¬µÚÈı·½
-        att_product: [],                                         // ²úÆ·½áËãÏ¸Ôò
-        att_traffic:[],                                          // ÎïÁ÷Ï¸Ôò
-        att_liability:String,                                    // Î¥Ô¼ÔğÈÎÏ¸Ôò
-        //editor_id:{type:String, default:''},                   // ×îºóĞŞ¸ÄÕßid
-        //time_edit:Date,                                        // ×îºóĞŞ¸ÄÊ±¼ä
-        //status:String,                                         // µ¥¾İ×´Ì¬
-        time_creation:{type:Date,required:true}                  // µ¥¾İ·¢²¼Ê±¼ä
+        user_id :{type:String, required:true},                  // è¡¨å•å‘èµ·è€…çš„ç”¨æˆ·IDã€‚
+        company_id : {type:String, required:true},              // è¡¨å•å‘èµ·è€…æ‰€å±å…¬å¸çš„IDã€‚
+        company_name:{type:String,required:true},               // å‘èµ·å…¬å¸çš„åç§°
+        category : {type:String, default:''},                   // è´§ç‰©ç§ç±»ï¼Œè‹±æ–‡æ ‡è¯†å­—æ®µã€‚
+        category_chn:{type:String ,default:''},                 // è´§ç‰©ç§ç±»ï¼Œä¸­æ–‡æ˜¾ç¤ºå­—æ®µã€‚
+        price:Number,                                            // å•ä»·
+        amount:Number,                                           // é‡‡è´­æ•°é‡
+        desc:[],                                                 // è´§ç‰©æè¿°å­—æ®µï¼ŒäºŒç»´æ•°ç»„ã€‚
+        time_traffic:Date,                                       // æè´§åˆ°è´§æ—¶é—´ -- æ ¹æ®æŠ¥çš„æ˜¯å‡ºå‚ä»·è¿˜æ˜¯åˆ°å²¸ä»·åšå…·ä½“æ˜¾ç¤ºåˆ¤æ–­
+        location_storage:String,                                 // åˆ°è´§åœ°ç‚¹
+        payment_advance:Number,                                  // é¢„ä»˜æ¬¾ -- ç™¾åˆ†æ¯”
+        payment_style: String,                                   // æŠ¥ä»·æ–¹å¼ -- å‡ºå‚ä»·æˆ–åˆ°å²¸ä»·
+        validity:{type:Boolean,default:true},                   // æ˜¯å¦æœ‰æ•ˆï¼Œå³æ˜¯å¦å¯æŠ¢å•
+        time_validity: {type:Date,required:true},                // æœ‰æ•ˆæœŸ
+        can_join : Boolean,                                      // æ˜¯å¦å¯å‡‘å•
+        //origin_check: String,                                  // è´¨æ£€ç»“æœæ¥æºï¼šä¹°æ–¹ï¼Œå–æ–¹ï¼Œç¬¬ä¸‰æ–¹
+        att_product: [],                                         // äº§å“ç»“ç®—ç»†åˆ™
+        att_traffic:[],                                          // ç‰©æµç»†åˆ™
+        att_liability:{type:String,select:false},               // è¿çº¦è´£ä»»ç»†åˆ™
+        //editor_id:{type:String, default:''},                   // æœ€åä¿®æ”¹è€…id
+        //time_edit:Date,                                        // æœ€åä¿®æ”¹æ—¶é—´
+        //status:String,                                         // å•æ®çŠ¶æ€
+        time_creation:{type:Date,required:true}                  // å•æ®å‘å¸ƒæ—¶é—´
     }
 );
 

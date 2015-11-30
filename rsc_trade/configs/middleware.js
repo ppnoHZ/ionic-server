@@ -1,5 +1,5 @@
 /**
- * Created by Administrator on 2015/11/26 0026.
+ * Created by ZHR on 2015/11/26 0026.
  */
 var jwt = require('jsonwebtoken');
 var config_common = require('./config_common');
@@ -41,5 +41,11 @@ module.exports =
         }
         res.setHeader('x-powered-by','Chris Brosnan');
         res.send(res_obj);
+    },
+    sendSMS:function(res,result)
+    {
+        // TODO: 向SMS服务器发出申请，并且接受返回值
+        result.msg = 'Still in development, not on line now.';
+        res.send({status:'success',data:result});
     }
 };

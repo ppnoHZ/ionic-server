@@ -1,44 +1,46 @@
 /**
- * Created by Administrator on 2015/11/25 0025.
+ * Created by ZHR on 2015/11/25 0025.
  */
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var DemandOrderSchema = new Schema(
     {
-        company_demand_id:{type:String,required:true},          // ĞèÇó·½¹«Ë¾ID -- À´×Ô²É¹ºµ¥
-        company_demand_name:{type:String,required:true},        // ĞèÇó·½¹«Ë¾Ãû³Æ -- À´×Ô²É¹ºµ¥
-        company_supply_id:{type:String,required:true},          // ¹©Ó¦·½¹«Ë¾ID -- À´×ÔÇÀµ¥
-        company_supply_name:{type:String,required:true},        // ¹©Ó¦·½¹«Ë¾Ãû³Æ -- À´×ÔÇÀ µ¥
-        user_demand_id:{type:String,required:true},             // ĞèÇó·½¶©µ¥·¢ÆğÈËID -- À´×Ô²É¹ºµ¥
-        user_supply_id:{type:String,required:true},             // ¹©Ó¦·½¶©µ¥³Ğ½ÓÈËID -- À´×ÔÇÀµ¥
-        demand_id:{type:String, required:true},                 // ¶©µ¥À´×ÔµÄ¹Òµ¥µÄID -- À´×Ô²É¹ºµ¥
-        offer_id:{type:String,required:true},                   // ¶©µ¥À´×ÔµÄÇÀµ¥µÄID -- À´×ÔÇÀµ¥
-        category:String,                                         // ÉÌÆ·ÀàĞÍ -- À´×Ô²É¹ºµ¥
-        category_chn:String,                                     // ÉÌÆ·ÀàĞÍÖĞÎÄ -- À´×Ô²É¹ºµ¥
-        amount:Number,                                           // ²É¹ºÊıÁ¿ -- À´×ÔÇÀµ¥
-        price_unit:Number,                                       // »õÎïµ¥¼Û -- À´×ÔÇÀµ¥
-        //price_total:Number,                                    // »õÎï×Ü¼Û -- ¼ÆËãµÃ³ö
-        desc:[],                                                 // »õÎïÃèÊö×Ö¶Î£¬Ëæ×Å»õÎï²»Í¬¶ø²»Í¬ -- À´×Ô²É¹ºµ¥
-        time_traffic:Date,                                       // µ½/Ìá»õÊ±¼ä -- À´×Ô²É¹ºµ¥
-        location_depart:String,                                  // Ìá»õµØµã -- À´×ÔÇÀµ¥
-        location_arrival:String,                                 // µ½»õµØµã -- À´×Ô²É¹ºµ¥
-        payment_advance:Number,                                  // Ô¤¸¶¿î -- °Ù·Ö±È -- À´×ÔÇÀµ¥
-        payment_style: String,                                   // ±¨¼Û·½Ê½ -- ³ö³§¼Û»òµ½°¶¼Û -- À´×Ô²É¹ºµ¥
-        check_product:[],                                        // ²úÆ·¼ìÑé½á¹û -- ÓÉ²É¹º·½ÌîĞ´
-        att_product: [],                                         // ²úÆ·½áËãÏ¸Ôò -- À´×Ô²É¹ºµ¥
-        att_traffic:[],                                          // ÎïÁ÷Ï¸Ôò -- À´×Ô²É¹ºµ¥
-        att_liability:String,                                    // Î¥Ô¼ÔğÈÎÏ¸Ôò -- À´×Ô²É¹ºµ¥
-        traffic_orders:[String],                                 // Ëù¹ØÁªµÄÎïÁ÷¶©µ¥µ¥ºÅÁĞ±í -- ÎïÁ÷¹Ü¿Ø·½ÊÖÌî
-        time_creation:Date,                                      // ´´½¨Ê±¼ä -- ÏµÍ³×Ô¶¯Éú³É
-        status:String,                                           // ¶©µ¥×´Ì¬ -- ÏµÍ³×Ô¶¯¹ÜÀí
-        step:Number,                                             // ¶©µ¥²½Öè -- ÏµÍ³×Ô¶¯¹ÜÀí
-        time_current_step:Date,                                  // Í£ÔÚµ±Ç°²½ÖèµÄ³õÊ¼ÈÕÆÚ -- ÏµÍ³×Ô¶¯¼ÇÂ¼
-        url_advanced_payment:String,                             // Ô¤¸¶¿îÆ¾Ö¤µÄURLµØÖ· -- ²É¹º·½ÉÏ´«
-        url_final_payment:String,                                // Î²¿î¸¶¿îÆ¾Ö¤URLµØÖ· -- ²É¹º·½ÉÏ´«
-        //credit_remain: Number,                                 // ²É¹º·½´Ó¹©Ó¦·½»ñµÃµÄĞÅÓÃ¶î¶È£¬ĞèÒª´ÓÕË»§ÏµÍ³¶ÁÈ¡
-        style_advanced_payment:String,                           // ²É¹º·½Ö§¸¶Ô¤¸¶¿î·½Ê½
-        style_final_payment:String                               // ²É¹º·½Ö§¸¶Î²¿îµÄ·½Ê½
+        index:{type:String, required:true, unique:{index:true}},// ç‰©æµå•å·
+        company_demand_id:{type:String,required:true},          // éœ€æ±‚æ–¹å…¬å¸ID -- æ¥è‡ªé‡‡è´­å•
+        company_demand_name:{type:String,required:true},        // éœ€æ±‚æ–¹å…¬å¸åç§° -- æ¥è‡ªé‡‡è´­å•
+        company_supply_id:{type:String,required:true},          // ä¾›åº”æ–¹å…¬å¸ID -- æ¥è‡ªæŠ¢å•
+        company_supply_name:{type:String,required:true},        // ä¾›åº”æ–¹å…¬å¸åç§° -- æ¥è‡ªæŠ¢ å•
+        user_demand_id:{type:String,required:true},             // éœ€æ±‚æ–¹è®¢å•å‘èµ·äººID -- æ¥è‡ªé‡‡è´­å•
+        user_supply_id:{type:String,required:true},             // ä¾›åº”æ–¹è®¢å•æ‰¿æ¥äººID -- æ¥è‡ªæŠ¢å•
+        demand_id:{type:String, required:true},                 // è®¢å•æ¥è‡ªçš„æŒ‚å•çš„ID -- æ¥è‡ªé‡‡è´­å•
+        offer_id:{type:String,required:true},                   // è®¢å•æ¥è‡ªçš„æŠ¢å•çš„ID -- æ¥è‡ªæŠ¢å•
+        category:String,                                         // å•†å“ç±»å‹ -- æ¥è‡ªé‡‡è´­å•
+        category_chn:String,                                     // å•†å“ç±»å‹ä¸­æ–‡ -- æ¥è‡ªé‡‡è´­å•
+        amount:Number,                                           // é‡‡è´­æ•°é‡ -- æ¥è‡ªæŠ¢å•
+        price_unit_demand:Number,                                // è´§ç‰©åŸå§‹å•ä»· -- æ¥è‡ªé‡‡è´­å•
+        price_unit:Number,                                       // è´§ç‰©å•ä»· -- æ¥è‡ªæŠ¢å•
+        //price_total:Number,                                    // è´§ç‰©æ€»ä»· -- è®¡ç®—å¾—å‡º
+        desc:[],                                                 // è´§ç‰©æè¿°å­—æ®µï¼Œéšç€è´§ç‰©ä¸åŒè€Œä¸åŒ -- æ¥è‡ªé‡‡è´­å•
+        time_traffic:Date,                                       // åˆ°/æè´§æ—¶é—´ -- æ¥è‡ªé‡‡è´­å•
+        location_depart:String,                                  // æè´§åœ°ç‚¹ -- æ¥è‡ªæŠ¢å•
+        location_arrival:String,                                 // åˆ°è´§åœ°ç‚¹ -- æ¥è‡ªé‡‡è´­å•
+        payment_advance:Number,                                  // é¢„ä»˜æ¬¾ -- ç™¾åˆ†æ¯” -- æ¥è‡ªæŠ¢å•
+        payment_style: String,                                   // æŠ¥ä»·æ–¹å¼ -- å‡ºå‚ä»·æˆ–åˆ°å²¸ä»· -- æ¥è‡ªé‡‡è´­å•
+        check_product:[],                                        // äº§å“æ£€éªŒç»“æœ -- ç”±é‡‡è´­æ–¹å¡«å†™
+        att_product: [],                                         // äº§å“ç»“ç®—ç»†åˆ™ -- æ¥è‡ªé‡‡è´­å•
+        att_traffic:[],                                          // ç‰©æµç»†åˆ™ -- æ¥è‡ªé‡‡è´­å•
+        att_liability:{type:String,select:false},               // è¿çº¦è´£ä»»ç»†åˆ™ -- æ¥è‡ªé‡‡è´­å•
+        traffic_orders:[String],                                 // æ‰€å…³è”çš„ç‰©æµè®¢å•å•å·åˆ—è¡¨ -- ç‰©æµç®¡æ§æ–¹æ‰‹å¡«
+        time_creation:Date,                                      // åˆ›å»ºæ—¶é—´ -- ç³»ç»Ÿè‡ªåŠ¨ç”Ÿæˆ
+        status:String,                                           // è®¢å•çŠ¶æ€ -- ç³»ç»Ÿè‡ªåŠ¨ç®¡ç†
+        step:Number,                                             // è®¢å•æ­¥éª¤ -- ç³»ç»Ÿè‡ªåŠ¨ç®¡ç†
+        time_current_step:Date,                                  // åœåœ¨å½“å‰æ­¥éª¤çš„åˆå§‹æ—¥æœŸ -- ç³»ç»Ÿè‡ªåŠ¨è®°å½•
+        url_advanced_payment:String,                             // é¢„ä»˜æ¬¾å‡­è¯çš„URLåœ°å€ -- é‡‡è´­æ–¹ä¸Šä¼ 
+        url_final_payment:String,                                // å°¾æ¬¾ä»˜æ¬¾å‡­è¯URLåœ°å€ -- é‡‡è´­æ–¹ä¸Šä¼ 
+        //credit_remain: Number,                                 // é‡‡è´­æ–¹ä»ä¾›åº”æ–¹è·å¾—çš„ä¿¡ç”¨é¢åº¦ï¼Œéœ€è¦ä»è´¦æˆ·ç³»ç»Ÿè¯»å–
+        style_advanced_payment:String,                           // é‡‡è´­æ–¹æ”¯ä»˜é¢„ä»˜æ¬¾æ–¹å¼
+        style_final_payment:String                               // é‡‡è´­æ–¹æ”¯ä»˜å°¾æ¬¾çš„æ–¹å¼
     }
 );
 

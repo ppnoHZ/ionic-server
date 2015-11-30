@@ -1,10 +1,11 @@
 /**
- * Created by Administrator on 2015/11/16 0016.
+ * Created by ZHR on 2015/11/16 0016.
  */
 module.exports =
 {
     status:'dev',
-    db:'mongodb://root:root123456@ds049864.mongolab.com:49864/rsc',
+    //db:'mongodb://root:root123456@ds049864.mongolab.com:49864/rsc',
+    db:'mongodb://localhost:27017/rsc_trade',
     entry_per_page:10,
     secret_keys:
     {
@@ -26,6 +27,10 @@ module.exports =
         'TRADE':'TRADE',
         'TRAFFIC':'TRAFFIC'
     },
+
+    index_collection :
+        ['a','b','c','d','e','f','g','h','i','j','k','m','n','p','q','r','s','t','u','v','w','x','y','z',
+        '2','3','4','5','6','7','8','9'],
 
     checkDateString :function(input)
     {
@@ -60,6 +65,25 @@ module.exports =
                 return false;
             }
         }
+        return true;
+    },
+
+    checkIDArray : function(length, input)
+    {
+        if(input == undefined || input == null || input.length == 0 || length + input.length > 20)
+        {
+            return false;
+        }
+
+        var reg = /^[0-9a-z]{24}$/;
+        for(var index in input)
+        {
+            if(!reg.test(input[index]))
+            {
+                return false;
+            }
+        }
+
         return true;
     },
 
