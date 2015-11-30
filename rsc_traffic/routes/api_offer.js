@@ -224,7 +224,7 @@ module.exports = function() {
                             if(JSON.parse(chunk).status == 'success'){
                                 return cb(null, trafficOffer);
                             }else{
-                                return cb('v_info err');
+                                return cb(JSON.parse(chunk).msg);
                             }
                         });
                     });
