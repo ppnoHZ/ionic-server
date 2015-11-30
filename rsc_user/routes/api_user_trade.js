@@ -68,7 +68,7 @@ module.exports = function() {
                     role:config_common.user_roles[req.body.type+'_ADMIN'],
                     real_name:req.body.real_name,
                     gender:req.body.gender,
-                    company_id:company._id
+                    company_id:company._id+''
                 });
                 user.save(function(err, userData){
                     if(err){

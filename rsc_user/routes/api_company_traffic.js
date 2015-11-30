@@ -185,5 +185,43 @@ module.exports = function() {
         });
     });
 
+    //获取本公司人员车辆
+    api.post('/get_user_traffic',function(req, res, next) {
+        async.waterfall([
+            function(cb){
+                if(req.decoded.role != config_common.user_roles.TRAFFIC_ADMIN){
+                    return cb('not allow');
+                }
+                UserTraffic.find({company_id: req.decoded.company_id}, function(err, users){
+                    if(err){
+                        return cb(err);
+                    }
+                    cb(null, users);
+                });
+            },
+            function(users, cb){
+                //更新司机使用状态和对应订单id
+                var userIdArr = [];
+                for(var i = 0;i < users.length; i++){
+                    userIdArr.push(users[i]._id+'');
+                }
+                cb(null, users, userIdArr);
+            },
+            function(users, userIdArr, cb){
+                Truck.find({user_id:{$in:userIdArr}}, function(err, trucks){
+                    if(err){
+                        return cb(err);
+                    }
+                    cb(null, users, trucks);
+                });
+            }
+        ],function(err, users, trucks){
+            if(err){
+                return next(err);
+            }
+            config_common.sendData(req, {users:users, trucks:trucks}, next);
+        });
+    });
+
     return api;
 };
