@@ -19,6 +19,13 @@ module.exports = {
         'cancelled':{eng:'cancelled',chn:'取消'}
     },
 
+    route_status: {
+        'ready': 'ready',
+        'driving':'driving',
+        'finish':'finish',
+        'cancelled':'cancelled'
+    },
+
     goods: {
         coal: {
             eng:'coal',chn:'煤炭',
@@ -47,6 +54,10 @@ module.exports = {
         'TRAFFIC_ADMIN':'TRAFFIC_ADMIN',
         'TRAFFIC_DRIVER':'TRAFFIC_DRIVER'
     },
+
+    index_collection :
+        ['a','b','c','d','e','f','g','h','i','j','k','m','n','p','q','r','s','t','u','v','w','x','y','z',
+            '2','3','4','5','6','7','8','9'],
 
     checkNumberBiggerZero:function(num) {
         return !(!num || !_.isNumber(num) || num <= 0);
@@ -97,6 +108,34 @@ module.exports = {
             obj.amount = -1;
         }
         return obj;
+    },
+
+    dateNumberToString: function(num) {
+        var str = '';
+        if(num < 10) {
+            str = '0' + num.toString();
+        } else {
+            str = num.toString();
+        }
+        return str;
+    },
+
+    getOrderIndex:function () {
+        var index = 'WL-';
+        var today = new Date();
+        var year = today.getFullYear().toString();
+        var month = this.dateNumberToString(today.getMonth() + 1);
+        var date = this.dateNumberToString(today.getDate());
+        var hour = this.dateNumberToString(today.getHours());
+        var minute = this.dateNumberToString(today.getMinutes());
+        var second = this.dateNumberToString(today.getSeconds());
+        var random = '';
+        for(var i = 0; i< 5; i++) {
+            var s_index = Math.floor(Math.random() * config_common.index_collection.length);
+            random += this.index_collection[s_index];
+        }
+        index += year+month+date+'-'+hour+minute+second+'-'+random;
+        return index;
     },
 
     sendData:function(req, data, next) {

@@ -306,6 +306,7 @@ module.exports = function() {
             function(trafficDemand, trafficOffer, cb){
                 //生成临时订单结构，之后把订单id及相应信息去user服务器进行检查
                 var order = new TrafficOrder({
+                    index: config_common.getOrderIndex(),
                     user_demand_id: trafficDemand.user_id,
                     company_demand_id: trafficDemand.company_id,
                     user_traffic_id: trafficOffer.user_id,

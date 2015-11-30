@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var TrafficOrder = new Schema({
+    index: {type:String, required:true},                       //随机生成订单号
     user_demand_id: {type:String, required:true},            //创建者id
     company_demand_id: {type:String, required:true},        //创建者公司id
     user_traffic_id :{type:String, required:true},          //创建人
@@ -18,7 +19,7 @@ var TrafficOrder = new Schema({
     time_depart:{type:Date, required:true},                 //交货时间
     location_depart:{type:String, required:true},          //交货地点
     payment_advance:{type:Number, required:true},           //预付款百分比
-    att_traffic:{type:String, required:true},               // 物流细则
+    att_traffic:{type:Array, required:true},               // 物流细则
     att_liability:{type:String, required:true},             // 违约责任
     time_creation:{type:Date, required:true},               //创建时间
     status: {type:String, required:true},                    //订单状态

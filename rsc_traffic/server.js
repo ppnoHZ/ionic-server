@@ -47,6 +47,7 @@ app.use(require('./middlewares/mid_receive')());
 
 app.use('/api/demand', require('./routes/api_demand')());
 app.use('/api/offer', require('./routes/api_offer')());
+app.use('/api/order', require('./routes/api_order')());
 
 app.use(require('./middlewares/mid_send')());
 app.use('*',function(req, res) {
