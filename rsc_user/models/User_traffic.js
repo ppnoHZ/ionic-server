@@ -12,7 +12,9 @@ var UserSchema = new Schema({
     role: {type:String, default:''},
     gender: {type:String, default:'MALE'},
     company_id: {type:Array},
-    photo_url: {type:String, default:''}
+    photo_url: {type:String, default:''},
+    order_id: {type:String},
+    use: {type:Boolean, default: false}
 });
 
 UserSchema.pre('save',function(next) {

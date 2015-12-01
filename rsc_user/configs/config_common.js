@@ -15,7 +15,8 @@ module.exports = {
     verify_codes : ['0','1','2','3','4','5','6','7','8','9'],
     secret_keys: {
         user:'user',
-        invite:'invite'
+        invite:'invite',
+        server_traffic:'server_traffic'
     },
 
     user_roles : {
@@ -24,6 +25,7 @@ module.exports = {
         'TRADE_SALE':'TRADE_SALE',
         'TRADE_MANUFACTURE':'TRADE_MANUFACTURE',
         'TRADE_FINANCE':'TRADE_FINANCE',
+        'TRADE_STORAGE':'TRADE_STORAGE',
         'TRAFFIC_ADMIN':'TRAFFIC_ADMIN',
         'TRAFFIC_DRIVER':'TRAFFIC_DRIVER'
     },

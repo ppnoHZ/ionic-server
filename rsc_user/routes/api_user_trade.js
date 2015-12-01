@@ -18,9 +18,7 @@ function createTokenUser(user) {
             role:user.role
         },
         config_common.secret_keys.user,
-        {
-            expiresIn: config_common.token_user_timeout
-        });
+        {expiresIn: config_common.token_user_timeout});
 }
 
 module.exports = function() {
@@ -70,7 +68,7 @@ module.exports = function() {
                     role:config_common.user_roles[req.body.type+'_ADMIN'],
                     real_name:req.body.real_name,
                     gender:req.body.gender,
-                    company_id:company._id
+                    company_id:company._id+''
                 });
                 user.save(function(err, userData){
                     if(err){
